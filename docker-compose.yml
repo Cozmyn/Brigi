@@ -1,31 +1,54 @@
-version: '3'
-
 services:
-  payload:
-    image: node:18-alpine
-    ports:
-      - '3000:3000'
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-brigitta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-brigitta}
     volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "yarn install && yarn dev"
-    depends_on:
-      - mongo
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brigitta} -d ${POSTGRES_DB:-brigitta}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: builder
     env_file:
       - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-brigitta}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-brigitta}
+    command: ["npm", "run", "payload", "--", "migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
 
-  mongo:
-    image: mongo:latest
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      DATABASE_URL: postgres://${POSTGRES_USER:-brigitta}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-brigitta}
     ports:
-      - '27017:27017'
-    command:
-      - --storageEngine=wiredTiger
+      - "${APP_PORT:-3000}:3000"
     volumes:
-      - data:/data/db
-    logging:
-      driver: none
+      - media_data:/app/public/media
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
-  data:
-  node_modules:
+  postgres_data:
+  media_data:
