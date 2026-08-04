@@ -5,6 +5,7 @@ const serverURL = new URL(configuredURL)
 const scriptPolicy = process.env.NODE_ENV === 'production' ? "script-src 'self' 'unsafe-inline'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
 
 const nextConfig = {
+  output: 'standalone',
   async headers() {
     return [{
       source: '/:path*',
