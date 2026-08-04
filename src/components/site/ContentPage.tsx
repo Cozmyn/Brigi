@@ -1,0 +1,12 @@
+import Link from 'next/link'
+import { packages, routeMap, type Locale } from '@/lib/site'
+
+export function ContentPage({ locale, title, eyebrow, intro, variant = 'service' }: { locale: Locale; title: string; eyebrow: string; intro: string; variant?: 'service' | 'simple' | 'media' }) {
+  const r = routeMap[locale]
+  return <>
+    <section className="inner-hero section-dark"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{intro}</p></section>
+    {variant === 'media' ? <section className="section empty-media"><div className="media-frame"><span aria-hidden="true">▶</span></div><div><p className="eyebrow">{locale === 'ro' ? 'În pregătire' : 'In preparation'}</p><h2>{locale === 'ro' ? 'Publicăm doar materiale aprobate.' : 'Only approved material is published.'}</h2><p>{locale === 'ro' ? 'Niciun video demonstrativ, iframe sau material fără drepturi clare nu este încărcat înainte de aprobare.' : 'No demo video, iframe or material without clear rights is loaded before approval.'}</p></div></section> : variant === 'service' ? <><section className="section content-columns"><div><p className="eyebrow">{locale === 'ro' ? 'Cum funcționează' : 'How it works'}</p><h2>{locale === 'ro' ? 'Muzica urmează programul, nu îl întrerupe.' : 'The music follows the programme, rather than interrupting it.'}</h2></div><div><p>{locale === 'ro' ? 'Brigitta coordonează din timp intrările, pauzele, momentele-cheie și necesarul tehnic cu organizatorul, DJ-ul sau MC-ul. Soundcheck-ul durează 45–60 de minute și se planifică, atunci când este posibil, înainte de accesul invitaților.' : 'Brigitta coordinates entrances, breaks, key moments and technical needs in advance with the planner, DJ or MC. Soundcheck takes 45–60 minutes and is scheduled before guests arrive whenever possible.'}</p></div></section><section className="section section-stone"><div className="package-grid compact">{packages[locale].map((p) => <article className="package-card" key={p.sets}><strong>{p.sets}</strong><h3>{p.name}</h3><p className="package-price">{p.price}</p><p>{p.fit}</p></article>)}</div></section></> : null}
+    <section className="final-cta section-dark"><h2>{locale === 'ro' ? 'Ai data și orașul?' : 'Do you have the date and city?'}</h2><p>{locale === 'ro' ? 'Trimite detaliile pentru verificarea disponibilității.' : 'Share the details to check availability.'}</p><Link className="button" href={r.booking}>{locale === 'ro' ? 'Verifică data' : 'Check availability'}</Link></section>
+  </>
+}
+

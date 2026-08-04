@@ -1,0 +1,9 @@
+.login a[href*='forgot'],
+.login a[href*='reset-password'] {
+  display: none;
+}
+
+.login__brand,
+.template-default__wrap::before {
+  color: #702f3c;
+}

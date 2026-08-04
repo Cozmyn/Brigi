@@ -1,0 +1,22 @@
+import type { GlobalConfig } from 'payload'
+import { isOwnerOrEditor } from '@/access/roles'
+
+export const SiteSettings: GlobalConfig = {
+  slug: 'site-settings',
+  access: { read: () => true, update: isOwnerOrEditor },
+  fields: [
+    { name: 'brandName', type: 'text', defaultValue: 'BRIGITTA', required: true },
+    { name: 'phone', type: 'text' },
+    { name: 'whatsapp', type: 'text' },
+    { name: 'defaultLocale', type: 'select', defaultValue: 'ro', options: ['ro', 'en'] },
+    { name: 'publicSlaDays', type: 'number', defaultValue: 10 },
+    { name: 'geographicArea', type: 'text', localized: true },
+    {
+      name: 'socialLinks', type: 'array', fields: [
+        { name: 'label', type: 'text', required: true },
+        { name: 'url', type: 'text', required: true },
+      ],
+    },
+  ],
+}
+
