@@ -5,7 +5,7 @@ Bilingual commercial website and Payload CMS back-office for Brigitta. Romanian 
 ## Stack
 
 - Next.js 16, React 19 and strict TypeScript
-- Payload CMS 3 with PostgreSQL
+- Payload CMS 3 with PostgreSQL 16
 - Tailwind CSS and a custom editorial design system
 - Vitest and Playwright
 
@@ -13,10 +13,10 @@ Bilingual commercial website and Payload CMS back-office for Brigitta. Romanian 
 
 1. Copy `.env.example` to `.env` and set a local PostgreSQL connection plus long random secrets.
 2. Run `npm install`.
-3. Run `npm run payload migrate` after the initial schema migration has been generated against the selected staging database.
+3. Run `npm run payload -- migrate`.
 4. Run `npm run dev` and open `/admin` to create the first owner.
 
-The public site can be built in preview mode while commercial/legal gates remain open:
+The public site can be built in preview mode while commercial and legal gates remain open:
 
 ```sh
 npm run lint
@@ -24,6 +24,19 @@ npm run typecheck
 npm run test:int
 npm run build
 ```
+
+## Docker deployment
+
+The production image uses Node.js 24 and Next.js standalone output. Docker Compose starts PostgreSQL 16, applies Payload migrations, then starts the application with persistent database and media volumes.
+
+```sh
+cp .env.example .env
+# Replace every placeholder and configure the real HTTPS URLs.
+docker compose up --build -d
+docker compose ps
+```
+
+Expose port `3000` through an HTTPS reverse proxy such as Caddy or Nginx. Back up both the PostgreSQL and media volumes. For a host with ephemeral storage, configure an S3-compatible media adapter before production.
 
 ## Production safety
 
