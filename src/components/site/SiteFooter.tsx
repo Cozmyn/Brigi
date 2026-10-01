@@ -1,16 +1,59 @@
 import Link from 'next/link'
-import { routeMap, type Locale } from '@/lib/site'
-
-export function SiteFooter({ locale }: { locale: Locale }) {
-  const r = routeMap[locale]
+import { isPublicURL, siteContent, type Locale } from '@/lib/site'
+import { TrackedLink } from './TrackedLink'
+export function SiteFooter({ locale: _locale }: { locale?: Locale }) {
+  const { artist, cta } = siteContent
   return (
-    <footer className="site-footer">
-      <div className="footer-main">
-        <div><div className="wordmark footer-mark">BRIGITTA</div><p>{locale === 'ro' ? 'Voce live pentru evenimente private, nunți și seri corporate.' : 'Live vocals for private events, weddings and corporate evenings.'}</p></div>
-        <nav aria-label="Footer"><Link href={r.privacy}>{locale === 'ro' ? 'Confidențialitate' : 'Privacy'}</Link><Link href={r.cookies}>Cookies</Link><Link href={r.terms}>{locale === 'ro' ? 'Termeni' : 'Terms'}</Link></nav>
+    <>
+      <footer className="site-footer">
+        <div className="footer-top">
+          <Link className="wordmark" href="/">
+            BRIGITTA
+            <span className="brand-dot" />
+          </Link>
+          <p>
+            Voce live. Muzică românească
+            <br />
+            și internațională. Evenimentul tău.
+          </p>
+          <div className="footer-contact">
+            {artist.phone && (
+              <TrackedLink event="click_phone" href={`tel:${artist.phone.replace(/[^+\d]/g, '')}`}>
+                {artist.phone}
+              </TrackedLink>
+            )}
+            {artist.email && <Link href={`mailto:${artist.email}`}>{artist.email}</Link>}
+            {Object.entries(artist.social)
+              .filter(([, url]) => isPublicURL(url))
+              .map(([name, url]) => (
+                <Link key={name} href={url} target="_blank" rel="noopener noreferrer">
+                  {name}
+                </Link>
+              ))}
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>© {new Date().getFullYear()} Brigitta</span>
+          <nav aria-label="Informații și pagini">
+            <Link href="/despre">Despre</Link>
+            <Link href="/confidentialitate">Confidențialitate</Link>
+            <Link href="/cookies">Cookies</Link>
+            <Link href="/termeni">Termeni</Link>
+          </nav>
+          <Link href="#main">Sus ↑</Link>
+        </div>
+      </footer>
+      <div className="mobile-contact" aria-label="Contact rapid">
+        {artist.phone && (
+          <TrackedLink event="click_phone" href={`tel:${artist.phone.replace(/[^+\d]/g, '')}`}>
+            Sună <span aria-hidden="true">↗</span>
+          </TrackedLink>
+        )}
+        <TrackedLink href="/rezervare">
+          {cta.quote}
+          <span aria-hidden="true">↗</span>
+        </TrackedLink>
       </div>
-      <div className="footer-bottom"><span>© {new Date().getFullYear()} Brigitta</span><span>{locale === 'ro' ? 'București și împrejurimi' : 'Bucharest and nearby'}</span></div>
-    </footer>
+    </>
   )
 }
-

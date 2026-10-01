@@ -9,7 +9,7 @@ const nextConfig = {
     return [{
       source: '/:path*',
       headers: [
-        { key: 'Content-Security-Policy', value: `default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; style-src 'self' 'unsafe-inline'; ${scriptPolicy}; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'` },
+        { key: 'Content-Security-Policy', value: `default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; style-src 'self' 'unsafe-inline'; ${scriptPolicy}; connect-src 'self'; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'` },
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'X-Frame-Options', value: 'DENY' },
@@ -20,7 +20,7 @@ const nextConfig = {
   },
   sassOptions: { loadPaths: ['./node_modules/@payloadcms/ui/dist/scss/'] },
   images: {
-    localPatterns: [{ pathname: '/api/media/file/**' }],
+    localPatterns: [{ pathname: '/api/media/file/**' }, { pathname: '/images/brigitta/**' }],
     qualities: [78, 100],
     remotePatterns: [{ hostname: serverURL.hostname, protocol: serverURL.protocol.replace(':', '') }],
   },
@@ -34,3 +34,4 @@ const nextConfig = {
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })
+
