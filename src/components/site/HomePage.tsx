@@ -1,11 +1,13 @@
 import Link from 'next/link'
-import { siteContent as c, type Locale } from '@/lib/site'
+import { type Locale } from '@/lib/site'
+import { getSiteContent } from '@/lib/cms'
 import { ArtistVisual } from './ArtistVisual'
 import { BookingForm } from './BookingForm'
 import { MediaSection } from './MediaSection'
 import { Packages } from './Packages'
 import { TrackedLink } from './TrackedLink'
-export function HomePage({ locale: _locale }: { locale?: Locale }) {
+export async function HomePage({ locale: _locale }: { locale?: Locale }) {
+  const c = await getSiteContent()
   return (
     <>
       <section className="hero">
@@ -14,8 +16,8 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
             <span className="live-dot" />
             {c.hero.kicker}
           </p>
-          <h1>
-            {c.hero.title[0]}
+          <h1 className="hero-title">
+            <span className="hero-name">{c.hero.title[0]}</span>
             <br />
             <em>{c.hero.title[1]}</em>
           </h1>
@@ -47,12 +49,16 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
           </div>
         </div>
         <ArtistVisual photo={c.photos.hero} priority />
+        <div className="hero-edition" aria-hidden="true">
+          <span>LIVE VOCALS</span>
+          <span>RO / INTL</span>
+        </div>
         <div className="hero-side-note" aria-hidden="true">
           BRIGITTA / MUZICĂ LIVE
         </div>
       </section>
       <div className="credibility-strip">
-        <span>O voce, mai multe scene.</span>
+        <span>Parcurs artistic</span>
         <ul>
           {c.artist.credentials.map((item) => (
             <li key={item}>{item}</li>
@@ -63,11 +69,7 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
       <section className="section experience-section" id="experienta">
         <div className="experience-copy">
           <p className="eyebrow">01 / Experiența live</p>
-          <h2>
-            Muzica se simte.
-            <br />
-            <em>Seara se schimbă.</em>
-          </h2>
+          <h2>{c.experience.title}</h2>
           <p>{c.experience.description}</p>
           <ol className="moment-list">
             {c.experience.moments.map((item, i) => (
@@ -86,11 +88,7 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
       <section className="section events-section" id="evenimente">
         <div className="section-heading">
           <p className="eyebrow">02 / Evenimentul tău</p>
-          <h2>
-            Fiecare seară
-            <br />
-            <em>are propriul ritm.</em>
-          </h2>
+          <h2>{c.headings.events}</h2>
         </div>
         <div className="event-list">
           {c.events.map((event, i) => (
@@ -109,11 +107,7 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
         <div className="section repertoire-inner">
           <div>
             <p className="eyebrow">03 / {c.repertoire.eyebrow}</p>
-            <h2>
-              De la emoție
-              <br />
-              <em>la energie.</em>
-            </h2>
+            <h2>{c.repertoire.title}</h2>
             <p>{c.repertoire.description}</p>
             <Link className="text-link" href="/repertoriu">
               Descoperă repertoriul ↗
@@ -130,19 +124,15 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
           </ul>
         </div>
       </section>
-      <MediaSection />
-      <Packages />
+      <MediaSection items={c.media} />
+      <Packages content={c} />
       <section className="section artist-section">
         <div className="artist-frame">
           <ArtistVisual photo={c.photos.portrait} variant="portrait" />
         </div>
         <div>
           <p className="eyebrow">Brigitta / Dincolo de scenă</p>
-          <h2>
-            Vocea,
-            <br />
-            <em>în prim-plan.</em>
-          </h2>
+          <h2>{c.headings.about}</h2>
           <p>{c.artist.biography}</p>
           <Link href="/despre" className="text-link">
             Despre Brigitta ↗
@@ -151,11 +141,7 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
       </section>
       <section className="section process-section">
         <p className="eyebrow">05 / De la idee la scenă</p>
-        <h2>
-          Patru pași.
-          <br />
-          <em>Un program al tău.</em>
-        </h2>
+        <h2>{c.headings.process}</h2>
         <ol className="process-grid">
           {c.process.map((step, i) => (
             <li key={step.title}>
@@ -185,11 +171,7 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
       <section className="section faq-section" id="intrebari">
         <div>
           <p className="eyebrow">06 / Detalii care contează</p>
-          <h2>
-            Înainte
-            <br />
-            <em>de primul refren.</em>
-          </h2>
+          <h2>{c.headings.faq}</h2>
         </div>
         <div className="faq-list">
           {c.faqs.map((item) => (
@@ -206,11 +188,7 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
       <section className="section booking-section" id="contact">
         <div className="booking-intro">
           <p className="eyebrow">07 / Hai să vorbim</p>
-          <h2>
-            Seara ta începe
-            <br />
-            <em>cu o conversație.</em>
-          </h2>
+          <h2>{c.booking.title}</h2>
           <p>{c.booking.description}</p>
           {c.artist.phone && (
             <TrackedLink
@@ -224,7 +202,10 @@ export function HomePage({ locale: _locale }: { locale?: Locale }) {
             </TrackedLink>
           )}
         </div>
-        <BookingForm locale="ro" />
+        <BookingForm
+          content={{ booking: c.booking, packages: c.packages, events: c.events }}
+          locale="ro"
+        />
       </section>
     </>
   )

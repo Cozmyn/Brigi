@@ -50,6 +50,7 @@ export const Inquiries: CollectionConfig = {
   admin: {
     group: 'Solicitări',
     useAsTitle: 'name',
+    listSearchableFields: ['name', 'email', 'phone', 'city', 'venue'],
     defaultColumns: [
       'createdAt',
       'name',
@@ -95,14 +96,14 @@ export const Inquiries: CollectionConfig = {
       required: true,
       defaultValue: 'new',
       options: [
-        'new',
-        'read',
-        'contacted',
-        'offer_prepared',
-        'confirmed',
-        'lost',
-        'archived',
-        'spam',
+        { label: 'Nouă', value: 'new' },
+        { label: 'Citită', value: 'read' },
+        { label: 'Contactat', value: 'contacted' },
+        { label: 'Ofertă trimisă', value: 'offer_prepared' },
+        { label: 'Confirmat', value: 'confirmed' },
+        { label: 'Închis', value: 'lost' },
+        { label: 'Arhivat', value: 'archived' },
+        { label: 'Spam', value: 'spam' },
       ],
     },
     { name: 'eventDate', type: 'text', required: true },
@@ -126,6 +127,7 @@ export const Inquiries: CollectionConfig = {
     { name: 'name', type: 'text', required: true, maxLength: 120 },
     { name: 'phone', type: 'text', required: true, maxLength: 24 },
     { name: 'email', type: 'email' },
+    { name: 'selectedPackageName', type: 'text', maxLength: 180 },
     { name: 'musicPreferences', type: 'textarea', maxLength: 1000 },
     { name: 'approximateBudget', type: 'text', maxLength: 120 },
     {

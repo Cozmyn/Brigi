@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isOwner } from '@/access/roles'
+import { isOwner, isBackOffice } from '@/access/roles'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -9,8 +9,24 @@ export const Users: CollectionConfig = {
     lockTime: 10 * 60 * 1000,
     cookies: { sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' },
   },
-  admin: { useAsTitle: 'displayName', defaultColumns: ['username', 'displayName', 'role', 'active'] },
-  access: { admin: isOwner, create: isOwner, delete: isOwner, read: isOwner, update: isOwner },
+  admin: {
+    useAsTitle: 'displayName',
+    defaultColumns: ['username', 'displayName', 'role', 'active'],
+  },
+  access: { admin: isBackOffice, create: isOwner, delete: isOwner, read: isOwner, update: isOwner },
+  hooks: {
+    beforeValidate: [
+      async ({ data, operation, req }) => {
+        if (
+          operation === 'create' &&
+          !(await req.payload.count({ collection: 'users', overrideAccess: true, req })).totalDocs
+        ) {
+          return { ...data, role: 'owner', active: true }
+        }
+        return data
+      },
+    ],
+  },
   fields: [
     { name: 'displayName', type: 'text', required: true },
     {
@@ -32,4 +48,3 @@ export const Users: CollectionConfig = {
     },
   ],
 }
-

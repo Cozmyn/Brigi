@@ -1,11 +1,25 @@
 import type { MetadataRoute } from 'next'
-import { routeMap, siteContent, siteURL } from '@/lib/site'
-export default function sitemap(): MetadataRoute.Sitemap {
-  return Object.entries(routeMap.ro)
-    .filter(([key]) => key !== 'video' || siteContent.media.length > 0)
-    .map(([key, path]) => ({
-      url: `${siteURL}${path}`,
-      changeFrequency: key === 'home' ? 'monthly' : 'yearly',
-      priority: key === 'home' ? 1 : key === 'booking' ? 0.9 : 0.6,
-    }))
+import { getPublicPages, getSiteContent, getHomeSEO } from '@/lib/cms'
+import { isProductionReady, siteURL } from '@/lib/site'
+export const revalidate = 60
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (!isProductionReady) return []
+  const [pages, c, home] = await Promise.all([getPublicPages(), getSiteContent(), getHomeSEO()])
+  return [
+    ...(!home?.noindex && (!home?.canonical || home.canonical === '/')
+      ? [{ url: siteURL + '/' }]
+      : []),
+    { url: siteURL + '/rezervare' },
+    ...pages
+      .filter(
+        (p) =>
+          !p.seo?.noindex &&
+          (!p.seo?.canonical || p.seo.canonical === `/${p.slug}`) &&
+          (p.type !== 'media' || c.media.length),
+      )
+      .map((p) => ({
+        url: `${siteURL}/${p.slug}`,
+        ...(p.updatedAt ? { lastModified: p.updatedAt } : {}),
+      })),
+  ]
 }

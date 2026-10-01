@@ -4,6 +4,8 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { publicCollection, publicGlobal } from './hooks/revalidatePublicSite'
+import { AnalyticsDaily } from './collections/AnalyticsDaily'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Users } from './collections/Users'
@@ -62,27 +64,30 @@ export default buildConfig({
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
   db: postgresAdapter({
+    push: process.env.PAYLOAD_SCHEMA_PUSH === 'true',
+    migrationDir: path.resolve(dirname, '../migrations'),
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
   }),
   collections: [
+    AnalyticsDaily,
     Users,
     AutomationAccounts,
     Inquiries,
-    Pages,
-    Services,
-    Videos,
-    Repertoire,
-    Testimonials,
-    FAQ,
-    Media,
-    Redirects,
+    publicCollection(Pages),
+    publicCollection(Services),
+    publicCollection(Videos),
+    publicCollection(Repertoire),
+    publicCollection(Testimonials),
+    publicCollection(FAQ),
+    publicCollection(Media),
+    publicCollection(Redirects),
     AuditEvents,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   csrf: [getServerSideURL()].filter(Boolean),
-  globals: [SiteSettings, Header, Footer, HomeSettings, PrivacySettings],
+  globals: [SiteSettings, Header, Footer, HomeSettings, PrivacySettings].map(publicGlobal),
   localization: {
     locales: [
       { code: 'ro', label: 'Română' },
@@ -115,3 +120,4 @@ export default buildConfig({
     tasks: [],
   },
 })
+

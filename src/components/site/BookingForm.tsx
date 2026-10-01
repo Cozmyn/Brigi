@@ -2,20 +2,31 @@
 import Link from 'next/link'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { inquirySchema } from '@/lib/inquiry'
-import { siteContent as c, type Locale } from '@/lib/site'
+import { type SiteContent, type Locale } from '@/lib/site'
 import { track } from './TrackedLink'
 
 type Errors = Record<string, string>
 export function BookingForm({
+  content: c,
+  selectedPackageName = '',
   locale: _locale,
   initialPackage = 'unsure',
 }: {
+  content: Pick<SiteContent, 'booking' | 'packages' | 'events'>
+  selectedPackageName?: string
   locale?: Locale
   initialPackage?: string
 }) {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
   const [errors, setErrors] = useState<Errors>({})
-  const [packageValue, setPackageValue] = useState(initialPackage)
+  const packageToken = (p: (typeof c.packages)[number]) =>
+    c.packages.filter((x) => x.formValue === p.formValue).length > 1
+      ? `${p.formValue}:${p.id}`
+      : p.formValue
+  const initial =
+    c.packages.find((p) => p.name === selectedPackageName) ||
+    c.packages.find((p) => p.formValue === initialPackage)
+  const [packageValue, setPackageValue] = useState(initial ? packageToken(initial) : initialPackage)
   const formRef = useRef<HTMLFormElement>(null)
   const idempotencyKey = useRef('')
   const started = useRef(false)
@@ -24,8 +35,8 @@ export function BookingForm({
     idempotencyKey.current = crypto.randomUUID()
     const params = new URLSearchParams(window.location.search)
     const value: Record<string, string> = {
-      landingPath: window.location.pathname + window.location.search,
-      referrer: document.referrer.slice(0, 500),
+      landingPath: window.location.pathname,
+      referrer: document.referrer ? new URL(document.referrer).origin : '',
     }
     for (const [query, field] of [
       ['utm_source', 'utmSource'],
@@ -37,8 +48,9 @@ export function BookingForm({
       if (params.get(query)) value[field] = params.get(query)!.slice(0, 120)
     }
     try {
-      const saved = sessionStorage.getItem('brigitta:attribution')
-      if (!saved) sessionStorage.setItem('brigitta:attribution', JSON.stringify(value))
+      const allowed = localStorage.getItem('brigitta:analytics-consent') === 'yes'
+      const saved = allowed ? sessionStorage.getItem('brigitta:attribution') : null
+      if (allowed && !saved) sessionStorage.setItem('brigitta:attribution', JSON.stringify(value))
       attribution.current = saved ? JSON.parse(saved) : value
     } catch {
       attribution.current = value
@@ -60,6 +72,8 @@ export function BookingForm({
       ...data,
       ...attribution.current,
       locale: 'ro',
+      packageInterest: packageValue.split(':')[0],
+      selectedPackageName: c.packages.find((p) => packageToken(p) === packageValue)?.name || '',
       privacyAcknowledged: data.privacyAcknowledged === 'on',
       idempotencyKey: idempotencyKey.current,
     }
@@ -228,7 +242,7 @@ export function BookingForm({
               }}
             >
               {c.packages.map((item) => (
-                <option key={item.id} value={item.formValue}>
+                <option key={item.id} value={packageToken(item)}>
                   {item.name} · {item.sets} × {item.duration} min
                 </option>
               ))}

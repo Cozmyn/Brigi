@@ -1,8 +1,27 @@
 import type { Metadata } from 'next'
-import { isProductionReady, isPublicURL, siteContent as c, siteURL } from './site'
-export function pageMetadata(title: string, description: string, path: string): Metadata {
-  const images = c.photos.social.src
-    ? [{ url: c.photos.social.src, alt: c.photos.social.alt, width: 1200, height: 630 }]
+import { isProductionReady, isPublicURL, siteContent, type SiteContent, siteURL } from './site'
+export type SEOOverrides = {
+  title?: string | null
+  description?: string | null
+  canonical?: string | null
+  noindex?: boolean | null
+  ogTitle?: string | null
+  ogDescription?: string | null
+  image?: { src: string; alt: string }
+}
+export function pageMetadata(
+  title: string,
+  description: string,
+  path: string,
+  c: SiteContent = siteContent,
+  seo?: SEOOverrides,
+): Metadata {
+  title = seo?.title || title
+  description = seo?.description || description
+  const canonical = seo?.canonical || path
+  const social = seo?.image || c.photos.social
+  const images = social.src
+    ? [{ url: social.src, alt: social.alt, width: 1200, height: 630 }]
     : [
         {
           url: '/opengraph-image',
@@ -15,12 +34,12 @@ export function pageMetadata(title: string, description: string, path: string): 
     metadataBase: new URL(siteURL),
     title,
     description,
-    alternates: { canonical: path },
-    robots: { index: isProductionReady, follow: isProductionReady },
+    alternates: { canonical },
+    robots: { index: isProductionReady && !seo?.noindex, follow: true },
     openGraph: {
-      title,
-      description,
-      url: path,
+      title: seo?.ogTitle || title,
+      description: seo?.ogDescription || description,
+      url: canonical,
       siteName: c.artist.name,
       locale: 'ro_RO',
       type: 'website',
@@ -37,7 +56,9 @@ export function pageMetadata(title: string, description: string, path: string): 
 export function structuredData(
   path = '/',
   title = 'Brigitta · Muzică live pentru evenimente',
-  includeFAQ = false,
+  includeFAQ: boolean | SiteContent['faqs'] = false,
+  c: SiteContent = siteContent,
+  includeOffers = true,
 ) {
   const personID = `${siteURL}/#brigitta`
   const siteID = `${siteURL}/#website`
@@ -80,33 +101,37 @@ export function structuredData(
       serviceType: 'Prestație vocală live cu repertoriu românesc și internațional',
       provider: { '@id': personID },
       ...(c.artist.serviceArea ? { areaServed: c.artist.serviceArea } : {}),
-      hasOfferCatalog: {
-        '@type': 'OfferCatalog',
-        name: 'Pachete live Brigitta',
-        itemListElement: c.packages.map((p) => ({
-          '@type': 'Offer',
-          name: p.name,
-          url: `${siteURL}/rezervare?pachet=${p.formValue}`,
-          priceSpecification: {
-            '@type': 'PriceSpecification',
-            minPrice: p.priceFrom,
-            priceCurrency: 'EUR',
-          },
-          description: `${p.sets} × ${p.duration} minute. ${p.description} Preț de pornire; oferta finală este personalizată.`,
-          itemOffered: {
-            '@type': 'Service',
-            name: `${p.name} · ${p.sets} × ${p.duration} minute`,
-            provider: { '@id': personID },
-          },
-        })),
-      },
+      ...(includeOffers
+        ? {
+            hasOfferCatalog: {
+              '@type': 'OfferCatalog',
+              name: 'Pachete live Brigitta',
+              itemListElement: c.packages.map((p) => ({
+                '@type': 'Offer',
+                name: p.name,
+                url: `${siteURL}/rezervare?pachet=${p.formValue}`,
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  ...(p.fromPricing ? { minPrice: p.priceFrom } : { price: p.priceFrom }),
+                  priceCurrency: p.currency,
+                },
+                description: `${p.sets} × ${p.duration} minute. ${p.description} ${p.fromPricing ? 'Preț de pornire; oferta finală este personalizată.' : ''}`,
+                itemOffered: {
+                  '@type': 'Service',
+                  name: `${p.name} · ${p.sets} × ${p.duration} minute`,
+                  provider: { '@id': personID },
+                },
+              })),
+            },
+          }
+        : {}),
     },
   ]
-  if (includeFAQ)
+  if (includeFAQ && (Array.isArray(includeFAQ) ? includeFAQ.length : c.faqs.length))
     graph.push({
       '@type': 'FAQPage',
-      '@id': `${siteURL}/#faq`,
-      mainEntity: c.faqs.map((faq) => ({
+      '@id': `${siteURL}${path}#faq`,
+      mainEntity: (Array.isArray(includeFAQ) ? includeFAQ : c.faqs).map((faq) => ({
         '@type': 'Question',
         name: faq.question,
         acceptedAnswer: { '@type': 'Answer', text: faq.answer },

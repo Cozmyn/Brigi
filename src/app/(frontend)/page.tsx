@@ -1,13 +1,21 @@
 import { HomePage } from '@/components/site/HomePage'
 import { SiteFooter } from '@/components/site/SiteFooter'
 import { SiteHeader } from '@/components/site/SiteHeader'
+import { getHomeSEO, getSiteContent } from '@/lib/cms'
 import { jsonLD, pageMetadata, structuredData } from '@/lib/seo'
-export const metadata = pageMetadata(
-  'Brigitta · Solistă pentru nunți și evenimente',
-  'Brigitta, voce live pentru nunți, botezuri, evenimente corporate și petreceri private. Muzică românească și internațională. Pachete de la 450 €.',
-  '/',
-)
-export default function Page() {
+export const revalidate = 60
+export async function generateMetadata() {
+  const c = await getSiteContent()
+  return pageMetadata(
+    'Brigitta · Solistă vocală pentru nunți și evenimente',
+    'Brigitta, solistă vocală pentru nunți, botezuri, corporate și petreceri private. Repertoriu românesc și internațional. Verifică disponibilitatea.',
+    '/',
+    c,
+    await getHomeSEO(),
+  )
+}
+export default async function Page() {
+  const c = await getSiteContent()
   return (
     <>
       <SiteHeader />
@@ -19,7 +27,7 @@ export default function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLD(
-            structuredData('/', 'Brigitta · Solistă pentru nunți și evenimente', true),
+            structuredData('/', 'Brigitta · Solistă vocală pentru evenimente', true, c),
           ),
         }}
       />

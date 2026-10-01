@@ -1,7 +1,7 @@
 {
   "name": "brigitta-website",
   "version": "1.0.0",
-  "description": "Bilingual Brigitta booking website and Payload back-office",
+  "description": "Brigitta live vocalist website and Payload content studio",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -21,7 +21,9 @@
     "test": "npm run test:int && npm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
-    "pretypecheck": "npm run generate:types"
+    "pretypecheck": "npm run generate:types",
+    "seed:content": "tsx scripts/seed-content.ts",
+    "db:migrate": "payload migrate"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.87.0",

@@ -1,4 +1,4 @@
-const requiredWhenLive = ['SITE_URL', 'PUBLIC_PHONE', 'PUBLIC_WHATSAPP', 'PRIVACY_OPERATOR', 'PRIVACY_CONTACT', 'INQUIRY_RETENTION_DAYS']
+const requiredWhenLive = ['SITE_URL', 'DATABASE_URL', 'PAYLOAD_SECRET', 'PRIVACY_OPERATOR', 'PRIVACY_CONTACT', 'INQUIRY_RETENTION_DAYS']
 
 if (process.env.PRODUCTION_GATES_CLOSED === 'true') {
   const missing = requiredWhenLive.filter((key) => !process.env[key] || /replace|placeholder|example/i.test(process.env[key]))
@@ -13,4 +13,5 @@ if (process.env.PRODUCTION_GATES_CLOSED === 'true') {
 }
 
 console.log(process.env.PRODUCTION_GATES_CLOSED === 'true' ? 'Production gates validated.' : 'Preview build: production gates remain open.')
+
 

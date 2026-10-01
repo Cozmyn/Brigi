@@ -47,6 +47,7 @@ export const inquirySchema = z.object({
     .max(24),
   email: z.string().trim().email('Introdu o adresă de email validă.').max(254),
   preferredContact: z.enum(['phone', 'whatsapp', 'email']),
+  selectedPackageName: z.string().max(180).optional(),
   musicPreferences: z.string().trim().max(1000).optional().default(''),
   approximateBudget: z.string().trim().max(120).optional().default(''),
   message: z.string().trim().max(2000).optional().default(''),
