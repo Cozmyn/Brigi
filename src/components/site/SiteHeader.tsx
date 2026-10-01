@@ -1,31 +1,42 @@
-'use client'
-
 import Link from 'next/link'
-import { useState } from 'react'
-import { copy, routeMap, type Locale } from '@/lib/site'
-
-export function SiteHeader({ locale }: { locale: Locale }) {
-  const [open, setOpen] = useState(false)
-  const c = copy[locale]
-  const r = routeMap[locale]
-  const links = [r.private, r.video, r.repertoire, r.about, `${r.home}#faq`]
+import { siteContent, type Locale } from '@/lib/site'
+import { TrackedLink } from './TrackedLink'
+export function SiteHeader({ locale: _locale }: { locale?: Locale }) {
   return (
     <header className="site-header">
-      <a className="skip-link" href="#main">{locale === 'ro' ? 'Sari la conținut' : 'Skip to content'}</a>
-      <div className="header-inner">
-        <Link className="wordmark" href={r.home} aria-label="Brigitta — home">BRIGITTA</Link>
-        <button className="menu-button" type="button" aria-expanded={open} aria-controls="main-nav" onClick={() => setOpen(!open)}>
-          <span aria-hidden="true">{open ? '×' : '☰'}</span><span className="sr-only">Menu</span>
-        </button>
-        <nav id="main-nav" className={open ? 'main-nav is-open' : 'main-nav'} aria-label="Primary">
-          {c.nav.map((label, index) => <Link key={label} href={links[index]} onClick={() => setOpen(false)}>{label}</Link>)}
+      <Link className="skip-link" href="#main">
+        Sari la conținut
+      </Link>
+      <Link className="wordmark" href="/" aria-label="Brigitta, pagina principală">
+        BRIGITTA
+        <span className="brand-dot" />
+      </Link>
+      <nav className="desktop-nav" aria-label="Navigație principală">
+        {siteContent.navigation.map((item) => (
+          <Link key={item.href} href={item.href}>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+      <TrackedLink className="header-cta" href="/rezervare">
+        {siteContent.cta.quote}
+        <span aria-hidden="true">↗</span>
+      </TrackedLink>
+      <details className="mobile-menu">
+        <summary aria-label="Deschide navigația">
+          <span />
+          <span />
+        </summary>
+        <nav aria-label="Navigație mobilă">
+          {siteContent.navigation.map((item) => (
+            <Link key={item.href} href={item.href}>
+              {item.label}
+            </Link>
+          ))}
+          <Link href="/despre">Despre Brigitta</Link>
+          <Link href="/rezervare">{siteContent.cta.availability}</Link>
         </nav>
-        <div className="header-actions">
-          <Link className="lang" href={locale === 'ro' ? '/en' : '/'} lang={locale === 'ro' ? 'en' : 'ro'}>{locale === 'ro' ? 'EN' : 'RO'}</Link>
-          <Link className="button button-small" href={r.booking}>{c.cta}</Link>
-        </div>
-      </div>
+      </details>
     </header>
   )
 }
-
