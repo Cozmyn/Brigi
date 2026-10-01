@@ -209,6 +209,9 @@ export const siteContent = {
   ],
   media: [] as Media[],
   testimonials: [] as Testimonial[],
+  // Foto: public/images/brigitta; căi /images/brigitta/...
+  // Hero/live: 1600×2000; portret: 1200×1600; social: 1200×630.
+  // Instrucțiuni și exemple: docs/actualizare-site.md.
   photos: {
     hero: {
       src: '',

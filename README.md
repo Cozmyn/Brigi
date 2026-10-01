@@ -24,6 +24,9 @@ API-ul returnează eroare dacă cererea nu poate fi salvată.
 
 ## Editarea conținutului
 
+[Instrucțiuni pas cu pas pentru contact, poze și prețuri](docs/actualizare-site.md).
+
+
 **`src/lib/site.ts` → `siteContent`** este sursa pentru nume, biografie, CTA, prețuri,
 pachete, evenimente, repertoriu, FAQ, testimoniale, media, social și fotografii.
 Prețurile orientative: Essential 450 €, Signature 750 €, Full Experience 1.050 €.
