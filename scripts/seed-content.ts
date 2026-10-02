@@ -87,6 +87,9 @@ if (!home.heroTitle)
     slug: 'home-settings',
     locale: 'ro',
     data: {
+      showreelVisible: true,
+      testimonialsVisible: true,
+      trustStripVisible: true,
       heroTitle: c.hero.title[0],
       heroAccent: c.hero.title[1],
       heroEyebrow: c.hero.kicker,

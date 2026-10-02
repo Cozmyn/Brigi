@@ -90,11 +90,27 @@ export const HomeSettings: GlobalConfig = {
     { name: 'heroEyebrow', type: 'text', localized: true },
     { name: 'heroTitle', type: 'text', localized: true },
     { name: 'heroSubtitle', type: 'textarea', localized: true },
-    { name: 'showreelVisible', type: 'checkbox', defaultValue: false },
-    { name: 'testimonialsVisible', type: 'checkbox', defaultValue: false },
-    { name: 'trustStripVisible', type: 'checkbox', defaultValue: false },
+    {
+      name: 'showreelVisible',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Afișează materialele pe homepage',
+    },
+    {
+      name: 'testimonialsVisible',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Afișează testimonialele aprobate pe homepage',
+    },
+    {
+      name: 'trustStripVisible',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Afișează parcursul artistic',
+    },
     {
       name: 'sectionOrder',
+      admin: { hidden: true },
       type: 'select',
       hasMany: true,
       defaultValue: [

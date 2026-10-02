@@ -57,15 +57,17 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           BRIGITTA / MUZICĂ LIVE
         </div>
       </section>
-      <div className="credibility-strip">
-        <span>Parcurs artistic</span>
-        <ul>
-          {c.artist.credentials.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-        <Link href="/despre">Cunoaște-o pe Brigitta ↗</Link>
-      </div>
+      {c.visibility.credentials && (
+        <div className="credibility-strip">
+          <span>Parcurs artistic</span>
+          <ul>
+            {c.artist.credentials.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <Link href="/despre">Cunoaște-o pe Brigitta ↗</Link>
+        </div>
+      )}
       <section className="section experience-section" id="experienta">
         <div className="experience-copy">
           <p className="eyebrow">01 / Experiența live</p>
@@ -124,7 +126,7 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           </ul>
         </div>
       </section>
-      <MediaSection items={c.media} />
+      {c.visibility.media && <MediaSection items={c.media} />}
       <Packages content={c} />
       <section className="section artist-section">
         <div className="artist-frame">
@@ -152,7 +154,7 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           ))}
         </ol>
       </section>
-      {c.testimonials.length > 0 && (
+      {c.visibility.testimonials && c.testimonials.length > 0 && (
         <section className="section testimonials">
           <p className="eyebrow">După ultimul refren</p>
           <h2>

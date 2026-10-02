@@ -18,8 +18,8 @@ export default function OpenGraphImage() {
     >
       <div style={{ display: 'flex', fontSize: 28, letterSpacing: 5 }}>BRIGITTA</div>
       <div style={{ display: 'flex', flexDirection: 'column', fontSize: 92, lineHeight: 1.1 }}>
-        <span>O voce.</span>
-        <span style={{ color: '#d9ef8c' }}>Toată atmosfera.</span>
+        <span>Brigitta.</span>
+        <span style={{ color: '#d9ef8c' }}>Vocea unei seri.</span>
       </div>
       <div style={{ display: 'flex', fontSize: 22 }}>
         MUZICĂ LIVE · NUNȚI · CORPORATE · EVENIMENTE PRIVATE

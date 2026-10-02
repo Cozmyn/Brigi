@@ -91,6 +91,11 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     c.artist.social = Object.fromEntries(
       settings.socialLinks.filter((x) => isPublicURL(x.url)).map((x) => [x.label, x.url]),
     )
+  c.visibility = {
+    media: home.showreelVisible !== false,
+    testimonials: home.testimonialsVisible !== false,
+    credentials: home.trustStripVisible !== false,
+  }
   c.analyticsEnabled = Boolean(settings.analyticsEnabled)
   c.verification = {
     google: settings.googleVerification || '',

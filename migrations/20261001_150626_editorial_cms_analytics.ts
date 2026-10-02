@@ -2,7 +2,10 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   CREATE TYPE "public"."enum_pages_page_type" AS ENUM('service', 'editorial', 'location', 'about', 'repertoire', 'media');
+   ALTER TABLE "home_settings" ALTER COLUMN "showreel_visible" SET DEFAULT true;
+  ALTER TABLE "home_settings" ALTER COLUMN "testimonials_visible" SET DEFAULT true;
+  ALTER TABLE "home_settings" ALTER COLUMN "trust_strip_visible" SET DEFAULT true;
+  CREATE TYPE "public"."enum_pages_page_type" AS ENUM('service', 'editorial', 'location', 'about', 'repertoire', 'media');
   CREATE TYPE "public"."enum__pages_v_version_page_type" AS ENUM('service', 'editorial', 'location', 'about', 'repertoire', 'media');
   CREATE TYPE "public"."enum_services_currency" AS ENUM('EUR', 'RON');
   CREATE TYPE "public"."enum__services_v_version_currency" AS ENUM('EUR', 'RON');
@@ -225,6 +228,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
+  ALTER TABLE "home_settings" ALTER COLUMN "showreel_visible" SET DEFAULT false;
+  ALTER TABLE "home_settings" ALTER COLUMN "testimonials_visible" SET DEFAULT false;
+  ALTER TABLE "home_settings" ALTER COLUMN "trust_strip_visible" SET DEFAULT false;
    ALTER TABLE "analytics_daily" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "pages_sections" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "pages_faqs" DISABLE ROW LEVEL SECURITY;

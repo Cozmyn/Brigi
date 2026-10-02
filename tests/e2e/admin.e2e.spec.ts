@@ -1,4 +1,6 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, request as apiRequest } from '@playwright/test'
+
+test.describe.configure({ retries: 0 })
 
 test('CMS publication, prices, consent analytics and lead privacy work end to end', async ({
   request,
@@ -73,8 +75,13 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
     data: { priceFromEUR: 450, _status: 'published' },
   })
 
-  expect((await request.get('/api/inquiries')).status()).toBe(403)
-  expect((await request.get('/api/dashboard')).status()).toBe(401)
+  const anonymous = await apiRequest.newContext({
+    baseURL: process.env.TEST_BASE_URL || 'http://127.0.0.1:3000',
+  })
+  expect((await anonymous.get('/api/inquiries')).status()).toBe(403)
+  expect((await anonymous.get('/api/dashboard')).status()).toBe(401)
+  await anonymous.dispose()
+  expect((await request.get('/api/inquiries', { headers })).status()).toBe(200)
   await request.post('/api/globals/site-settings', { headers, data: { analyticsEnabled: true } })
   const analyticsCalls: string[] = []
   page.on('request', (r) => {

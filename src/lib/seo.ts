@@ -32,7 +32,7 @@ export function pageMetadata(
       ]
   return {
     metadataBase: new URL(siteURL),
-    title,
+    title: { absolute: title.includes('Brigitta') ? title : `${title} | Brigitta` },
     description,
     alternates: { canonical },
     robots: { index: isProductionReady && !seo?.noindex, follow: true },

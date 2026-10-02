@@ -168,6 +168,7 @@ export const siteContent = {
       features: [] as string[],
     },
   ],
+  visibility: { media: true, testimonials: true, credentials: true },
   analyticsEnabled: false,
   verification: { google: '', bing: '' },
   headings: {
