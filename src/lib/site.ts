@@ -55,6 +55,8 @@ export const siteContent = {
       'Voce live și prezență scenică. Repertoriu românesc și internațional pentru nunți, petreceri private și evenimente corporate.',
   },
   cta: { availability: 'Verifică disponibilitatea', phone: 'Sună acum', quote: 'Cere ofertă' },
+  headerCTA: { label: '', href: '/rezervare' },
+  footerText: 'Voce live. Muzică românească și internațională. Evenimentul tău.',
   navigation: [
     { label: 'Experiența', href: '/#experienta' },
     { label: 'Evenimente', href: '/#evenimente' },

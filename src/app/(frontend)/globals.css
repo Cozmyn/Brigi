@@ -2525,3 +2525,5 @@ h2 {
     padding: 20px;
   }
 }
+
+.visual-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 30px 18px 14px; background: linear-gradient(transparent,#06191be8); color: #f2f4ee; font-size: 12px; z-index: 2; }

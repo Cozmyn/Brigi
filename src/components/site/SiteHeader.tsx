@@ -20,8 +20,8 @@ export async function SiteHeader({ locale: _locale }: { locale?: Locale }) {
           </Link>
         ))}
       </nav>
-      <TrackedLink className="header-cta" href="/rezervare">
-        {siteContent.cta.quote}
+      <TrackedLink className="header-cta" href={siteContent.headerCTA.href}>
+        {siteContent.headerCTA.label || siteContent.cta.quote}
         <span aria-hidden="true">↗</span>
       </TrackedLink>
       <details className="mobile-menu">

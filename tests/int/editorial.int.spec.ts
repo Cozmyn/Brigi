@@ -56,3 +56,22 @@ describe('private aggregate analytics', () => {
     expect(analyticsDay(new Date('2026-09-30T22:30:00Z'))).toBe('2026-10-01')
   })
 })
+
+describe('vocalist positioning repair', () => {
+  it('corrects obsolete public copy without changing URLs or identifiers', async () => {
+    const { repairPublicText } = await import('@/lib/positioning')
+    const result = repairPublicText({
+      title: 'Saxofonistă pentru evenimente',
+      seo: { description: 'Live saxophone' },
+      slug: 'old-saxophone',
+      url: '/saxophone.jpg',
+      content: { root: { children: [{ text: 'sax performance' }] } },
+    })
+    expect(result).toMatchObject({
+      title: 'Solistă vocală pentru evenimente',
+      seo: { description: 'Live vocals' },
+      slug: 'old-saxophone',
+      url: '/saxophone.jpg',
+    })
+  })
+})

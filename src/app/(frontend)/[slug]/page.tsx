@@ -99,7 +99,15 @@ export default async function RomanianPage({
   } else if (legalKey[slug as keyof typeof legalKey]) {
     const item = legalCopy[legalKey[slug as keyof typeof legalKey]]
     title = item.title
-    content = <LegalPage {...item} />
+    const cms = await getCMS()
+    const privacy = cms
+      ? await cms.findGlobal({ slug: 'privacy-settings', overrideAccess: true })
+      : null
+    const pending =
+      privacy?.completed && (slug === 'confidentialitate' || slug === 'termeni')
+        ? `Operator: ${privacy.operatorName}. Contact: ${privacy.privacyContact}. ${privacy.retentionRule}`
+        : item.pending
+    content = <LegalPage {...item} pending={pending} />
   } else {
     const cms = await getCMS()
     if (cms) {

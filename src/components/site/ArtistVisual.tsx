@@ -4,7 +4,7 @@ export function ArtistVisual({
   variant = 'hero',
   priority = false,
 }: {
-  photo: { src: string; alt: string; position?: string }
+  photo: { src: string; alt: string; position?: string; caption?: string }
   variant?: string
   priority?: boolean
 }) {
@@ -31,6 +31,7 @@ export function ArtistVisual({
           <span className="art-note">VOCE · PREZENȚĂ · ENERGIE</span>
         </div>
       )}
+      {photo.src && photo.caption && <p className="visual-caption">{photo.caption}</p>}
     </div>
   )
 }

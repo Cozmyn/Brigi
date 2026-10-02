@@ -14,11 +14,7 @@ export async function SiteFooter({ locale: _locale }: { locale?: Locale }) {
             BRIGITTA
             <span className="brand-dot" />
           </Link>
-          <p>
-            Voce live. Muzică românească
-            <br />
-            și internațională. Evenimentul tău.
-          </p>
+          <p>{siteContent.footerText}</p>
           <div className="footer-contact">
             {artist.phone && (
               <TrackedLink event="click_phone" href={`tel:${artist.phone.replace(/[^+\d]/g, '')}`}>

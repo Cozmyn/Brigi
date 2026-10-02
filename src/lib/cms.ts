@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { siteContent, type SiteContent, isPublicURL } from './site'
+import { repairPublicText } from './positioning'
 import { editorialPages, type EditorialPage } from './editorial'
 import type { Media, Page } from '@/payload-types'
 
@@ -12,6 +13,7 @@ export function publicPhoto(value: number | Media | null | undefined) {
   return {
     src: value.url,
     alt: value.alt,
+    caption: value.caption || undefined,
     position: `${value.focalX ?? 50}% ${value.focalY ?? 50}%`,
   }
 }
@@ -67,7 +69,20 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
       where: { and: [{ visible: { equals: true } }, { publicationConsent: { equals: true } }] },
     }),
   ])
+  const [header, footer] = await Promise.all([
+    cms.findGlobal({ slug: 'header', locale: 'ro', overrideAccess: false }),
+    cms.findGlobal({ slug: 'footer', locale: 'ro', overrideAccess: false }),
+  ])
   const c: SiteContent = structuredClone(siteContent)
+  if (header.navigation?.length)
+    c.navigation = header.navigation
+      .filter((x) => /^\/(?!\/)/.test(x.url))
+      .map((x) => ({ label: x.label, href: x.url }))
+  c.headerCTA = {
+    label: header.ctaLabel || '',
+    href: header.ctaUrl && /^\/(?!\/)/.test(header.ctaUrl) ? header.ctaUrl : '/rezervare',
+  }
+  c.footerText = footer.description || c.footerText
   c.artist.phone = settings.phone ?? c.artist.phone
   c.artist.email = settings.email ?? c.artist.email
   c.artist.biography = nonempty(settings.biography, c.artist.biography)
@@ -160,9 +175,10 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     author: x.author,
     context: [x.eventType, x.city, x.year].filter(Boolean).join(' · '),
   }))
-  return c
+  return repairPublicText(c) as SiteContent
 })
 export function cmsPage(doc: Page): EditorialPage {
+  doc = repairPublicText(doc) as Page
   return {
     slug: doc.slug,
     title: doc.title,

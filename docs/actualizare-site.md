@@ -14,7 +14,7 @@ npm run build
 npm run start
 ```
 
-Migrația adaugă câmpurile necesare; păstrează cererile și conținutul existent. Importul de conținut este idempotent: nu suprascrie paginile/pachetele existente. Dacă existau deja pagini în CMS, revizuiește-le înainte de publicare. Primul cont creat prin ecranul inițial devine Owner. Nu există cont sau parolă prestabilită.
+Migrația adaugă câmpurile necesare; păstrează cererile și conținutul existent. Importul de conținut este idempotent: nu înlocuiește paginile/pachetele existente; corectează doar eventualele formulări vechi care prezentau artista ca instrumentistă. Dacă existau deja pagini în CMS, revizuiește-le înainte de publicare. Primul cont creat prin ecranul inițial devine Owner. Nu există cont sau parolă prestabilită.
 
 ## Unde modifici
 
