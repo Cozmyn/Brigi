@@ -45,7 +45,7 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
     headers,
     data: { _status: 'published' },
   })
-  expect(published.ok()).toBe(true)
+  expect(published.ok(), await published.text()).toBe(true)
   await page.goto('/verificare-editoriala')
   await expect(page.locator('h1')).toHaveText('Conținut administrat')
   await expect(page).toHaveTitle(/Titlu SEO QA/)

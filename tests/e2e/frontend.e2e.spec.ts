@@ -7,7 +7,13 @@ test('Romanian homepage, configured prices and conditional sections', async ({ p
   await expect(page.locator('.package-price')).toContainText(['450', '750', '1.050'])
   await expect(page.locator('iframe')).toHaveCount(0)
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.evaluate(() => document.fonts.ready)
+  expect(await page.locator('body').evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(
+    /Manrope/i,
+  )
   await page.screenshot({ path: test.info().outputPath('homepage-desktop.png'), fullPage: true })
+  await page.screenshot({ path: test.info().outputPath('hero-desktop.png') })
   await page.goto('/en')
   await expect(page).toHaveURL(/\/$/)
 })
@@ -25,8 +31,16 @@ test('mobile pages fit and missing routes return 404', async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    if (width === 375)
+    if (width === 375) {
+      const columns = await page
+        .locator('.experience-section')
+        .evaluate((el) => getComputedStyle(el).gridTemplateColumns)
+      expect(columns.split(' ')).toHaveLength(1)
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await page.evaluate(() => document.fonts.ready)
       await page.screenshot({ path: test.info().outputPath('homepage-mobile.png'), fullPage: true })
+      await page.screenshot({ path: test.info().outputPath('hero-mobile.png') })
+    }
     await page.goto('/rezervare')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }

@@ -60,24 +60,28 @@ export const Pages: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
-      validate: (v: unknown) =>
-        (typeof v === 'string' &&
-          /^(home|[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(v) &&
-          ![
-            'home',
-            'admin',
-            'api',
-            'next',
-            'en',
-            'rezervare',
-            'contact',
-            'confidentialitate',
-            'cookies',
-            'termeni',
-            'solista-nunta',
-            'solista-evenimente-corporate',
-          ].includes(v)) ||
-        'Slug simplu, fără /, spații sau rute rezervate.',
+      validate: (value: unknown, { previousValue }) => {
+        const v = value === undefined ? previousValue : value
+        return (
+          (typeof v === 'string' &&
+            /^(home|[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(v) &&
+            ![
+              'home',
+              'admin',
+              'api',
+              'next',
+              'en',
+              'rezervare',
+              'contact',
+              'confidentialitate',
+              'cookies',
+              'termeni',
+              'solista-nunta',
+              'solista-evenimente-corporate',
+            ].includes(v)) ||
+          'Slug simplu, fără /, spații sau rute rezervate.'
+        )
+      },
     },
     {
       name: 'pageType',

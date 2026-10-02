@@ -38,8 +38,10 @@ export const SiteSettings: GlobalConfig = {
           name: 'url',
           type: 'text',
           required: true,
-          validate: (v: unknown) =>
-            (typeof v === 'string' && /^https:\/\//.test(v)) || 'Adresă HTTPS completă.',
+          validate: (value: unknown, { previousValue }) => {
+            const v = value === undefined ? previousValue : value
+            return (typeof v === 'string' && /^https:\/\//.test(v)) || 'Adresă HTTPS completă.'
+          },
         },
       ],
     },

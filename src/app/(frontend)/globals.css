@@ -2287,6 +2287,7 @@ h2 {
     line-height: 1.13;
   }
   .experience-section {
+    grid-template-columns: 1fr;
     gap: 42px;
   }
   .experience-copy > p:not(.eyebrow),

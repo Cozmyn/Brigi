@@ -43,9 +43,13 @@ export const HomeSettings: GlobalConfig = {
           name: 'href',
           type: 'text',
           required: true,
-          validate: (v: unknown) =>
-            (typeof v === 'string' && /^\/(?!\/)[a-z0-9/-]*$/.test(v)) ||
-            'Cale internă, de exemplu /solista-botez',
+          validate: (value: unknown, { previousValue }) => {
+            const v = value === undefined ? previousValue : value
+            return (
+              (typeof v === 'string' && /^\/(?!\/)[a-z0-9/-]*$/.test(v)) ||
+              'Cale internă, de exemplu /solista-botez'
+            )
+          },
         },
       ],
     },
