@@ -60,7 +60,7 @@ export const Pages: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
-      validate: (value: unknown, { previousValue }) => {
+      validate: (value: unknown, { previousValue }: { previousValue?: unknown }) => {
         const v = value === undefined ? previousValue : value
         return (
           (typeof v === 'string' &&
