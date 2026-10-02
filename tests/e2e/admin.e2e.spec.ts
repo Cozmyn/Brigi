@@ -14,7 +14,7 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   const { token } = await registered.json()
   expect(token).toBeTruthy()
   const headers = { Authorization: `JWT ${token}` }
-  const create = await request.post('/api/pages', {
+  const create = await request.post('/api/pages?locale=ro&draft=true', {
     headers,
     data: {
       title: 'Pagină editorială QA',
@@ -41,19 +41,24 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   expect(create.status()).toBe(201)
   const doc = (await create.json()).doc
   expect((await request.get('/verificare-editoriala')).status()).toBe(404)
-  const published = await request.patch(`/api/pages/${doc.id}`, {
+  // Payload's admin publishes the current localized form, including its draft content.
+  const draft = await (await request.get(`/api/pages/${doc.id}?locale=ro&draft=true`, { headers })).json()
+  expect(draft.title).toBe('Pagină editorială QA')
+  expect(draft.heroTitle).toBe('Conținut administrat')
+  const published = await request.patch(`/api/pages/${doc.id}?locale=ro`, {
     headers,
-    data: { _status: 'published' },
+    data: { ...draft, _status: 'published' },
   })
   expect(published.ok(), await published.text()).toBe(true)
   await page.goto('/verificare-editoriala')
   await expect(page.locator('h1')).toHaveText('Conținut administrat')
   await expect(page).toHaveTitle(/Titlu SEO QA/)
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/)
-  await request.patch(`/api/pages/${doc.id}`, {
+  const renamed = await request.patch(`/api/pages/${doc.id}?locale=ro`, {
     headers,
-    data: { slug: 'verificare-editoriala-noua' },
+    data: { ...draft, _status: 'published', slug: 'verificare-editoriala-noua' },
   })
+  expect(renamed.ok(), await renamed.text()).toBe(true)
   const old = await request.get('/verificare-editoriala', { maxRedirects: 0 })
   expect(old.status()).toBe(308)
   expect(old.headers().location).toBe('/verificare-editoriala-noua')
@@ -63,7 +68,7 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   expect(essential).toBeTruthy()
   await request.patch(`/api/services/${essential.id}?locale=ro`, {
     headers,
-    data: { priceFromEUR: 499, _status: 'published' },
+    data: { ...essential, priceFromEUR: 499, _status: 'published' },
   })
   await page.goto('/')
   await expect(page.locator('.package-price').first()).toContainText('499')
@@ -72,7 +77,7 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   )
   await request.patch(`/api/services/${essential.id}?locale=ro`, {
     headers,
-    data: { priceFromEUR: 450, _status: 'published' },
+    data: { ...essential, priceFromEUR: 450, _status: 'published' },
   })
 
   const anonymous = await apiRequest.newContext({
