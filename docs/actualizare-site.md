@@ -1,72 +1,81 @@
-# Cum actualizezi noul website Brigitta
+# Administrarea website-ului Brigitta
 
-Versiunea publică este construită din `src/lib/site.ts`, nu din vechile colecții de conținut din admin. `/admin` este folosit pentru cererile de rezervare. După modificarea conținutului sau a variabilelor publice, reconstruiește și redeployează aplicația.
+Modificările se fac în `/admin`. Website-ul folosește acum conținutul Payload. Fișierul `src/lib/site.ts` este doar baza inițială și fallback pentru un preview fără bază de date.
 
-## Contact și domeniu
+## Prima actualizare
 
-În panoul serviciului de hosting, la Environment Variables, completează:
+Pe mediul de hosting, cu variabilele existente configurate:
 
-- `PUBLIC_PHONE`: telefonul public, cu prefix internațional, de exemplu formatul `+40…`.
-- `PUBLIC_BOOKING_EMAIL`: adresa publică pentru booking.
-- `SITE_URL` și `NEXT_PUBLIC_SERVER_URL`: domeniul complet, cu `https://`.
-- `PRIVACY_OPERATOR`, `PRIVACY_CONTACT`, `INQUIRY_RETENTION_DAYS`: datele reale pentru informarea de confidențialitate.
-
-La dezvoltare locală, completează aceleași valori în `.env`, care nu se publică în GitHub. Valorile goale pentru telefon/email ascund linkurile de contact. `PUBLIC_WHATSAPP` este o variabilă istorică cerută de validatorul de lansare; noul frontend afișează telefon și email, fără buton WhatsApp separat.
-
-## Texte, pachete și social
-
-Deschide `src/lib/site.ts` în GitHub, apasă creionul (Edit) și modifică obiectul `siteContent`:
-
-- `artist.biography`: biografia; `artist.social`: linkurile oficiale complete; `artist.serviceArea`: zona de deplasare.
-- `packages`: `name`, `sets`, `duration`, `priceFrom`, descriere și detalii. Prețul se scrie ca număr în EUR, fără simbol: `450`, `750`, `1050`.
-- `hero`, `experience`, `repertoire`, `faqs`, `booking`: textele respective.
-- `media`: materiale live reale; `testimonials`: doar citate aprobate.
-
-Păstrează valorile `formValue` ale pachetelor (`1x45`, `2x45`, `3x45`), deoarece acestea sunt folosite în formular și backend. Schimbarea prețurilor actualizează simultan cardurile și datele SEO.
-
-## Fotografiile folosite acum
-
-În GitHub, deschide `public/images/brigitta`, apoi Add file → Upload files. Încarcă fotografiile cu numele de mai jos. După upload, completează `src` în `siteContent.photos`; calea începe cu `/images/brigitta/`, fără `public`.
-
-| Utilizare | Fișier | Rezoluție recomandată | Raport sursă | Țintă de greutate |
-| --- | --- | --- | --- | --- |
-| Fotografia principală | `hero.webp` | 1600 × 2000 px | 4:5, vertical | 200–400 KB |
-| Secțiunea experiență/live | `live.webp` | 1600 × 2000 px | 4:5, vertical | 150–350 KB |
-| Portret / despre artistă | `portrait.webp` | 1200 × 1600 px | 3:4, vertical | 120–300 KB |
-| Imagine distribuită pe social | `social.jpg` | 1200 × 630 px | aproximativ 1,91:1 | sub 250 KB |
-
-Dimensiunile sunt recomandări de export, nu dimensiunile fixe de afișare. Fotografiile se adaptează cadrului cu `object-fit: cover`, deci marginile pot fi decupate diferit pe desktop și mobil. Alege imagini cu chipul departe de margini, spațiu în jurul capului și fără text imprimat. Hero-ul este mai lat pe mobil; păstrează subiectul în zona centrală. Nu mări artificial fotografii mici.
-
-Exemplu în `siteContent.photos`:
-
-```ts
-hero: {
-  src: '/images/brigitta/hero.webp',
-  alt: 'Brigitta pe scenă, cântând live',
-  position: 'center 25%',
-},
-live: {
-  src: '/images/brigitta/live.webp',
-  alt: 'Brigitta în timpul unui program live',
-  position: 'center 30%',
-},
-portrait: {
-  src: '/images/brigitta/portrait.webp',
-  alt: 'Portret Brigitta',
-  position: 'center 25%',
-},
-social: {
-  src: '/images/brigitta/social.jpg',
-  alt: 'Brigitta — muzică live pentru evenimente',
-},
+```sh
+npm ci
+npm run db:migrate
+npm run seed:content
+npm run build
+npm run start
 ```
 
-`position` reglează punctul de decupare: `center 25%` favorizează partea de sus; `center` centrează imaginea. Verifică desktop și mobil după fiecare înlocuire. Dacă `src` rămâne gol, se afișează compoziția abstractă existentă. Imaginea social goală folosește cardul grafic generat automat.
+Migrația adaugă câmpurile necesare; păstrează cererile și conținutul existent. Importul de conținut este idempotent: nu înlocuiește paginile/pachetele existente; corectează doar eventualele formulări vechi care prezentau artista ca instrumentistă. Dacă existau deja pagini în CMS, revizuiește-le înainte de publicare. Primul cont creat prin ecranul inițial devine Owner. Nu există cont sau parolă prestabilită.
 
-Sloturile `landscape`, `stage`, `atmosphere`, `editorial` sunt rezervate pentru extinderi și nu sunt afișate în homepage-ul actual. Pentru viitoare imagini late recomandăm 1800 × 1200 px (3:2); nu trebuie încărcate acum.
+## Unde modifici
 
-## Publicarea modificărilor
+| Conținut | Locul din admin |
+|---|---|
+| Hero, subtitluri, CTA, secțiuni, evenimente, proces | Homepage / `home-settings` |
+| Fotografii hero, live, portret și imagine socială | Homepage → Photos; selectează un fișier din Media |
+| Telefon, email, biografie, zonă, profiluri oficiale | Site settings |
+| Prețuri, monedă, seturi, durată, recomandat, includeri | Services |
+| Pagini, texte, întrebări, SEO, imagine OG | Pages |
+| Piese și interpret original | Repertoire |
+| Linkuri YouTube, Spotify și alte materiale | Videos |
+| Întrebări de pe homepage | FAQ |
+| Mesaje și progresul ofertelor | Inquiries |
+| Statistici și cereri recente | Dashboard |
 
-Salvează modificările în `main` (Commit changes). Dacă hostingul urmărește automat `main`, va începe un deployment; altfel declanșează manual Redeploy în panoul hostingului. Actualizarea repository-ului nu dovedește că deploymentul s-a încheiat.
+Salvarea/publicarea invalidează cache-ul site-ului. Paginile publice folosesc și o revalidare de rezervă la 60 de secunde. Un draft nu apare public. Pentru Pages sunt necesare starea Published, Visible și Approved for publication. Pentru Services: Published, Visible și Price approved. Fotografiile și materialele video trebuie aprobate pentru publicare.
 
-La prima trecere la noua versiune, aplică migrarea existentă `npm run payload -- migrate`, apoi build/deploy. Formularul folosește PostgreSQL-ul existent; solicitările se verifică în `/admin`, fără notificare automată prin email. Variabilele de bază de date și secretele se configurează exclusiv în hosting sau `.env` local.
+## Pachete și prețuri
+
+Poți modifica numele, numărul de seturi (`setCount`), durata, prețul, EUR/RON, eticheta „de la”, descrierea, includerile, ordinea și evidențierea. Debifarea Visible ascunde pachetul și îl scoate din formular și schema publică. Nu trebuie modificat codul.
+
+Câmpul `sets` păstrează codul compatibil cu cererile istorice. `setCount` și `duration` stabilesc programul afișat. În cerere este salvat și numele pachetului selectat, pentru a distinge variantele. Prețurile inițiale de 450/750/1050 EUR rămân repere de confirmat înainte de lansare.
+
+## Fotografii
+
+În Media: încarcă imaginea, adaugă un text alternativ descriptiv, setează punctul focal și aprobă publicarea. Apoi selecteaz-o în secțiunea dorită. Câmpurile goale nu produc imagini defecte. Nu șterge o fotografie folosită înainte să o înlocuiești.
+
+| Utilizare | Rezoluție recomandată | Raport | Dimensiune orientativă |
+|---|---|---|---|
+| Hero și fotografie live | 1600 × 2000 px | 4:5 | 200–400 KB |
+| Portret despre artistă | 1200 × 1600 px | 3:4 | 120–300 KB |
+| Imagine într-o pagină | 1800 × 1200 px | 3:2 | 150–350 KB |
+| Open Graph / social | 1200 × 630 px | 1,91:1 | sub 250 KB |
+
+WebP/AVIF sunt preferate. Lasă spațiu deasupra capului și evită subiectul lipit de margine. Punctul focal este aplicat în frontend. CMS produce variante de dimensiune; Next optimizează imaginile publice. Fisierele sunt stocate local în `public/media`: hostingul trebuie să păstreze acest director între deploy-uri și să îl includă în backup. Nu se versionează în git.
+
+## Pagini noi și SEO
+
+Creează o pagină cu slug fără `/`, titlu, H1, introducere și secțiuni structurate. Adaugă întrebări reale și pagini asociate. Completează SEO title, description, index/noindex, eventual canonical și Open Graph. Canonical gol înseamnă adresa proprie. Nu folosi canonical pentru a masca texte duplicate.
+
+Pentru o pagină locală selectează `location`, completează aria de servicii și scrie conținut propriu: context local, disponibilitate reală, imagini sau evenimente reale, întrebări utile. Nu genera pagini doar schimbând numele orașului. Schimbarea unui slug creează o redirecționare permanentă de la vechea adresă. Verifică legăturile din textele libere.
+
+Pagina video rămâne neindexabilă până există materiale: adaugă materialele aprobate și debifează noindex în SEO-ul paginii. Noindex global pentru preview este controlat prin `PRODUCTION_GATES_CLOSED=false`.
+
+## Cereri
+
+Inboxul oferă căutare după nume, telefon, email, oraș sau locație, filtre și sortare. Stările sunt Nouă, Citită, Contactat, Ofertă trimisă, Confirmat, Închis, Arhivat și Spam. Deschiderea unei cereri noi o marchează citită. Folosește Internal notes pentru discuții și Last contacted at pentru urmărire. Schimbările de stare sunt auditate.
+
+Emailul nu este trimis automat. Cererea este considerată reușită numai după salvarea în baza de date. Dashboardul arată ultimele cereri. Accesul editorilor la solicitări se acordă separat prin Can access inquiries.
+
+## Statistici
+
+Activează Analytics enabled în Site settings. Vizitatorul poate accepta sau refuza; refuzul nu blochează site-ul. Preferința poate fi schimbată din subsol. Do Not Track / Global Privacy Control sunt respectate.
+
+Dashboard: vizite astăzi/7/30 zile, pagini văzute, top pagini, domenii de proveniență, campanii UTM, clickuri telefon/contact, formulare începute/finalizate și selecții de pachete. Datele se referă numai la vizitatorii care acceptă. O vizită reprezintă o sesiune de filă, nu o persoană unică. Clickul pe telefon nu este dovada unui apel. Inboxul rămâne sursa pentru numărul real de cereri.
+
+Nu se păstrează IP-uri, identificatori de vizitator sau trasee individuale în analytics. Sursa este doar domeniul, fără query/path. Campaniile acceptă identificatori simpli, fără date personale. Contoarele sunt agregate zilnic, pe fusul Europe/Bucharest; datele mai vechi de 90 zile se șterg la următoarea înregistrare. Nu introduce nume, emailuri sau telefoane în UTM-uri.
+
+## Lansare
+
+Configurează domeniul HTTPS prin SITE_URL și NEXT_PUBLIC_SERVER_URL, identitatea/contactul operatorului și regula de păstrare. Setează PRODUCTION_GATES_CLOSED=true doar când conținutul este pregătit. Adaugă codurile Google/Bing în Site settings și trimite `/sitemap.xml` în instrumentele lor. `/llms.txt` este experimental; nu garantează vizibilitate sau poziții.
+
+Nu publica fișiere de mediu reale, credențiale, tipurile generate sau snapshot-uri JSON ale migrațiilor. În repository se păstrează numai exemplul de variabile fără secrete și migrațiile necesare.

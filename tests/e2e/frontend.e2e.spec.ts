@@ -2,12 +2,18 @@ import { expect, test } from '@playwright/test'
 
 test('Romanian homepage, configured prices and conditional sections', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('O voce.')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Brigitta.')
   await expect(page.getByRole('link', { name: 'Verifică disponibilitatea' }).first()).toBeVisible()
   await expect(page.locator('.package-price')).toContainText(['450', '750', '1.050'])
   await expect(page.locator('iframe')).toHaveCount(0)
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.evaluate(() => document.fonts.ready)
+  expect(await page.locator('body').evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(
+    /Manrope/i,
+  )
   await page.screenshot({ path: test.info().outputPath('homepage-desktop.png'), fullPage: true })
+  await page.screenshot({ path: test.info().outputPath('hero-desktop.png') })
   await page.goto('/en')
   await expect(page).toHaveURL(/\/$/)
 })
@@ -25,8 +31,16 @@ test('mobile pages fit and missing routes return 404', async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    if (width === 375)
+    if (width === 375) {
+      const columns = await page
+        .locator('.experience-section')
+        .evaluate((el) => getComputedStyle(el).gridTemplateColumns)
+      expect(columns.split(' ')).toHaveLength(1)
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await page.evaluate(() => document.fonts.ready)
       await page.screenshot({ path: test.info().outputPath('homepage-mobile.png'), fullPage: true })
+      await page.screenshot({ path: test.info().outputPath('hero-mobile.png') })
+    }
     await page.goto('/rezervare')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
@@ -65,4 +79,43 @@ test('real inquiry is saved and retry does not duplicate it', async ({ request }
     headers,
   })
   expect(invalid.status()).toBe(422)
+})
+
+test('editorial pages have crawlable unique content, canonicals and working links', async ({
+  page,
+  request,
+}) => {
+  const titles = new Set<string>()
+  for (const slug of [
+    'nunti-si-ceremonii',
+    'evenimente-corporate',
+    'evenimente-private',
+    'solista-botez',
+    'muzica-live-evenimente',
+    'repertoriu',
+    'despre',
+  ]) {
+    const response = await page.goto('/' + slug)
+    expect(response?.status()).toBe(200)
+    await expect(page.locator('h1')).toHaveCount(1)
+    expect(await page.locator('.editorial-section').count()).toBeGreaterThanOrEqual(3)
+    const title = await page.title()
+    expect(titles.has(title)).toBe(false)
+    titles.add(title)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      new RegExp('/' + slug + '$'),
+    )
+    const graph = JSON.parse(
+      (await page.locator('script[type="application/ld+json"]').textContent()) || '{}',
+    )
+    expect(graph['@graph'].some((x: { '@type': string }) => x['@type'] === 'Person')).toBe(true)
+    await page.setViewportSize({ width: 375, height: 812 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  expect((await request.get('/api/dashboard')).status()).toBe(401)
+  expect(
+    (await request.post('/api/analytics', { data: { event: 'page_view', path: '/' } })).status(),
+  ).toBe(403)
+  expect((await request.get('/admin/login')).headers()['x-robots-tag']).toContain('noindex')
 })

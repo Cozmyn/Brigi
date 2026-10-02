@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { REST_GET, REST_PATCH, REST_DELETE, REST_OPTIONS } from '@payloadcms/next/routes'
 import { inquirySchema, normalizePhone } from '@/lib/inquiry'
 
 const attempts = new Map<string, number[]>()
@@ -77,3 +78,11 @@ export async function POST(request: Request) {
     return Response.json({ error: 'The enquiry could not be saved.' }, { status: 500 })
   }
 }
+
+// This explicit booking route shadows the CMS collection root. Delegate admin reads
+// and bulk operations to Payload so its authentication, filters and access checks apply.
+const inquiryParams = { params: Promise.resolve({ slug: ['inquiries'] }) }
+export const GET = (request: Request) => REST_GET(configPromise)(request, inquiryParams)
+export const PATCH = (request: Request) => REST_PATCH(configPromise)(request, inquiryParams)
+export const DELETE = (request: Request) => REST_DELETE(configPromise)(request, inquiryParams)
+export const OPTIONS = (request: Request) => REST_OPTIONS(configPromise)(request, inquiryParams)

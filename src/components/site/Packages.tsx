@@ -1,15 +1,12 @@
-import { formatPrice, siteContent } from '@/lib/site'
+import { formatPrice, type SiteContent } from '@/lib/site'
 import { TrackedLink } from './TrackedLink'
-export function Packages() {
+export function Packages({ content: siteContent }: { content: SiteContent }) {
+  if (!siteContent.packages.length) return null
   return (
     <section className="section packages-section" id="pachete">
       <div className="section-heading">
         <p className="eyebrow">04 / Pachete live</p>
-        <h2>
-          Un moment.
-          <br />
-          <em>Sau o seară întreagă.</em>
-        </h2>
+        <h2>{siteContent.headings.packages}</h2>
         <p>Alege punctul de pornire. Împreună stabilim detaliile.</p>
       </div>
       <div className="package-grid">
@@ -25,18 +22,25 @@ export function Packages() {
             </p>
             <p className="package-description">{p.description}</p>
             <div className="package-price">
-              <span>de la</span>
+              <span>{p.fromPricing ? 'de la' : 'preț'}</span>
               <strong>
                 {formatPrice(p.priceFrom)}
-                <small> €</small>
+                <small> {p.currency === 'EUR' ? '€' : 'lei'}</small>
               </strong>
             </div>
             <p className="package-detail">{p.detail}</p>
+            {p.features.length > 0 && (
+              <ul className="package-features">
+                {p.features.map((x) => (
+                  <li key={x}>{x}</li>
+                ))}
+              </ul>
+            )}
             <TrackedLink
               className="button button-outline"
               event="package_selected"
               detail={{ package: p.id }}
-              href={`/rezervare?pachet=${p.formValue}`}
+              href={`/rezervare?pachet=${p.formValue}&selectie=${encodeURIComponent(p.id)}`}
             >
               {siteContent.cta.availability}
               <span aria-hidden="true">↗</span>

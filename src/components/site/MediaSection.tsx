@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { isPublicURL, siteContent } from '@/lib/site'
+import { isPublicURL, type SiteContent } from '@/lib/site'
 import { track } from './TrackedLink'
 function youtubeID(value: string) {
   try {
@@ -16,9 +16,9 @@ function youtubeID(value: string) {
     return null
   }
 }
-export function MediaSection() {
+export function MediaSection({ items: media }: { items: SiteContent['media'] }) {
   const [playing, setPlaying] = useState<string | null>(null)
-  const items = siteContent.media.filter(
+  const items = media.filter(
     (item) => isPublicURL(item.url) && (item.kind !== 'youtube' || youtubeID(item.url)),
   )
   if (!items.length) return null

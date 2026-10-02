@@ -1,7 +1,9 @@
 import Link from 'next/link'
-import { siteContent, type Locale } from '@/lib/site'
+import { getSiteContent } from '@/lib/cms'
+import { type Locale } from '@/lib/site'
 import { TrackedLink } from './TrackedLink'
-export function SiteHeader({ locale: _locale }: { locale?: Locale }) {
+export async function SiteHeader({ locale: _locale }: { locale?: Locale }) {
+  const siteContent = await getSiteContent()
   return (
     <header className="site-header">
       <Link className="skip-link" href="#main">
@@ -18,8 +20,8 @@ export function SiteHeader({ locale: _locale }: { locale?: Locale }) {
           </Link>
         ))}
       </nav>
-      <TrackedLink className="header-cta" href="/rezervare">
-        {siteContent.cta.quote}
+      <TrackedLink className="header-cta" href={siteContent.headerCTA.href}>
+        {siteContent.headerCTA.label || siteContent.cta.quote}
         <span aria-hidden="true">↗</span>
       </TrackedLink>
       <details className="mobile-menu">

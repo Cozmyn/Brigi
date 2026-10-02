@@ -1,7 +1,10 @@
 import Link from 'next/link'
-import { isPublicURL, siteContent, type Locale } from '@/lib/site'
+import { PrivacyPreferences } from './Analytics'
+import { getSiteContent } from '@/lib/cms'
+import { isPublicURL, type Locale } from '@/lib/site'
 import { TrackedLink } from './TrackedLink'
-export function SiteFooter({ locale: _locale }: { locale?: Locale }) {
+export async function SiteFooter({ locale: _locale }: { locale?: Locale }) {
+  const siteContent = await getSiteContent()
   const { artist, cta } = siteContent
   return (
     <>
@@ -11,11 +14,7 @@ export function SiteFooter({ locale: _locale }: { locale?: Locale }) {
             BRIGITTA
             <span className="brand-dot" />
           </Link>
-          <p>
-            Voce live. Muzică românească
-            <br />
-            și internațională. Evenimentul tău.
-          </p>
+          <p>{siteContent.footerText}</p>
           <div className="footer-contact">
             {artist.phone && (
               <TrackedLink event="click_phone" href={`tel:${artist.phone.replace(/[^+\d]/g, '')}`}>
@@ -36,8 +35,13 @@ export function SiteFooter({ locale: _locale }: { locale?: Locale }) {
           <span>© {new Date().getFullYear()} Brigitta</span>
           <nav aria-label="Informații și pagini">
             <Link href="/despre">Despre</Link>
+            <Link href="/nunti-si-ceremonii">Nunți</Link>
+            <Link href="/solista-botez">Botezuri</Link>
+            <Link href="/evenimente-corporate">Corporate</Link>
+            <Link href="/muzica-live-evenimente">Ghid muzică live</Link>
             <Link href="/confidentialitate">Confidențialitate</Link>
             <Link href="/cookies">Cookies</Link>
+            {siteContent.analyticsEnabled && <PrivacyPreferences />}
             <Link href="/termeni">Termeni</Link>
           </nav>
           <Link href="#main">Sus ↑</Link>

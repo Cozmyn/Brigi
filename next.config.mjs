@@ -6,7 +6,7 @@ const scriptPolicy = process.env.NODE_ENV === 'production' ? "script-src 'self' 
 
 const nextConfig = {
   async headers() {
-    return [{
+    return [{ source: '/admin/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }] }, { source: '/api/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }, {
       source: '/:path*',
       headers: [
         { key: 'Content-Security-Policy', value: `default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; style-src 'self' 'unsafe-inline'; ${scriptPolicy}; connect-src 'self'; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'` },
@@ -20,7 +20,7 @@ const nextConfig = {
   },
   sassOptions: { loadPaths: ['./node_modules/@payloadcms/ui/dist/scss/'] },
   images: {
-    localPatterns: [{ pathname: '/api/media/file/**' }, { pathname: '/images/brigitta/**' }],
+    localPatterns: [{ pathname: '/api/media/file/**' }, { pathname: '/images/brigitta/**' }, { pathname: '/media/**' }],
     qualities: [78, 100],
     remotePatterns: [{ hostname: serverURL.hostname, protocol: serverURL.protocol.replace(':', '') }],
   },

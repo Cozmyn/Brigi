@@ -36,7 +36,7 @@ type Testimonial = { quote: string; author: string; context: string }
 export const siteContent = {
   artist: {
     name: 'Brigitta',
-    profession: 'Solistă · Voce live',
+    profession: 'Solistă vocală · Live vocalist',
     phone: process.env.PUBLIC_PHONE || '',
     email: process.env.PUBLIC_BOOKING_EMAIL || '',
     social: { instagram: '', facebook: '', tiktok: '', youtube: '', spotify: '' } as Record<
@@ -45,16 +45,18 @@ export const siteContent = {
     >,
     serviceArea: '',
     biography:
-      'De la Vocea României la scena alături de SISTEM și lansări proprii, Brigitta își construiește fiecare apariție în jurul vocii. Astăzi, aduce muzică românească și internațională la nunți, botezuri, evenimente corporate și petreceri private.',
-    credentials: ['Vocea României', 'SISTEM', 'Muzică originală'],
+      'Brigitta este solistă vocală, fostă concurentă la Vocea României și fostă solistă SISTEM, cu lansări muzicale proprii. Astăzi, aduce muzică românească și internațională la nunți, botezuri, evenimente corporate și petreceri private.',
+    credentials: ['Vocea României · fostă concurentă', 'SISTEM · fostă solistă', 'Lansări proprii'],
   },
   hero: {
-    kicker: 'Muzică live pentru evenimentul tău',
-    title: ['O voce.', 'Toată atmosfera.'],
+    kicker: 'Solistă vocală · Nunți & evenimente',
+    title: ['Brigitta.', 'Vocea unei seri.'],
     description:
-      'Brigitta. Voce live, muzică românească și internațională. Pentru nunți, evenimente corporate și seri în care vrei să simți muzica.',
+      'Voce live și prezență scenică. Repertoriu românesc și internațional pentru nunți, petreceri private și evenimente corporate.',
   },
   cta: { availability: 'Verifică disponibilitatea', phone: 'Sună acum', quote: 'Cere ofertă' },
+  headerCTA: { label: '', href: '/rezervare' },
+  footerText: 'Voce live. Muzică românească și internațională. Evenimentul tău.',
   navigation: [
     { label: 'Experiența', href: '/#experienta' },
     { label: 'Evenimente', href: '/#evenimente' },
@@ -86,8 +88,8 @@ export const siteContent = {
     {
       id: 'ceremony',
       title: 'Botezuri',
-      description: 'O atmosferă caldă pentru o sărbătoare în familie.',
-      href: '/evenimente-private',
+      description: 'Un program vocal atent la ritmul unei sărbători în familie.',
+      href: '/solista-botez',
     },
     {
       id: 'other',
@@ -133,6 +135,9 @@ export const siteContent = {
       description: 'Un moment live care dă tonul.',
       detail: 'Pentru un moment special, o recepție sau o intervenție în program.',
       featured: false,
+      currency: 'EUR',
+      fromPricing: true,
+      features: [] as string[],
     },
     {
       id: 'signature',
@@ -144,6 +149,9 @@ export const siteContent = {
       description: 'Două seturi. Mai multă energie.',
       detail: 'Pentru două momente distincte, cu o dinamică adaptată serii.',
       featured: true,
+      currency: 'EUR',
+      fromPricing: true,
+      features: [] as string[],
     },
     {
       id: 'full-experience',
@@ -155,8 +163,22 @@ export const siteContent = {
       description: 'Muzică live în mai multe acte.',
       detail: 'Pentru evenimente cu mai multe etape și un program live extins.',
       featured: false,
+      currency: 'EUR',
+      fromPricing: true,
+      features: [] as string[],
     },
   ],
+  visibility: { media: true, testimonials: true, credentials: true },
+  analyticsEnabled: false,
+  verification: { google: '', bing: '' },
+  headings: {
+    events: 'Fiecare ocazie, un alt ritm.',
+    packages: 'Alege ritmul serii.',
+    process: 'De la prima discuție, la primul refren.',
+    about: 'Vocea, în prim-plan.',
+    faq: 'Detaliile unui program bine pregătit.',
+  },
+  songs: [] as { song: string; originalArtist: string; category: string }[],
   pricingNote:
     'Prețuri de pornire orientative. Oferta finală ține cont de dată, oraș, locație, deplasare, numărul de seturi, cerințele tehnice, cererile muzicale și formatul evenimentului.',
   process: [
@@ -304,7 +326,7 @@ export const legalCopy = {
   },
   cookies: {
     title: 'Cookies',
-    text: 'Această versiune nu instalează instrumente de analytics sau publicitate. Aplicația poate folosi tehnologii necesare funcționării și securității. Materialele externe se încarcă doar după o acțiune explicită.',
+    text: 'Statisticile opționale se activează numai cu acordul tău și folosesc contoare agregate pentru pagini, surse și interacțiuni, fără IP-uri sau profiluri individuale. Preferința este salvată local în browser; o poți modifica din subsol. Datele agregate sunt păstrate 90 de zile. Autentificarea în administrare folosește cookie-uri necesare. Materialele externe se încarcă doar după o acțiune explicită.',
     pending: '',
   },
   terms: {
@@ -314,3 +336,5 @@ export const legalCopy = {
       'Datele operatorului și condițiile contractuale vor fi completate înainte de lansarea publică.',
   },
 } as const
+
+export type SiteContent = typeof siteContent
