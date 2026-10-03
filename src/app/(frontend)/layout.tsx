@@ -4,6 +4,7 @@ import { isProductionReady, siteURL } from '@/lib/site'
 import './globals.css'
 import { Analytics } from '@/components/site/Analytics'
 import { getSiteContent } from '@/lib/cms'
+export const dynamic = 'force-dynamic'
 const serif = Bodoni_Moda({
   subsets: ['latin', 'latin-ext'],
   weight: ['400', '500'],

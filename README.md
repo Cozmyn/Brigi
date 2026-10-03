@@ -8,6 +8,10 @@ Website Next.js 16 cu CMS propriu la `/admin`, MySQL/MariaDB și rulare Node.js 
 
 ## Instalare și actualizare
 
+Pe cPanel **nu rula `npm run build`**. Workflow-ul [cPanel production artifact](.github/workflows/cpanel-build.yml) compilează și testează pachetul pe GitHub. Urmează [procedura de deploy](docs/cpanel.md), apoi rulează `bash scripts/deploy-cpanel.sh /cale/privata/brigi-cpanel-build.tar.gz`.
+
+Comenzile de mai jos sunt pentru dezvoltare/CI, pe o mașină care permite compilarea:
+
 ```sh
 npm ci
 npm run db:migrate

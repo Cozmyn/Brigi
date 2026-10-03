@@ -1,6 +1,6 @@
 import { getPublicPages, getSiteContent } from '@/lib/cms'
 import { isProductionReady, siteURL } from '@/lib/site'
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 export async function GET() {
   if (!isProductionReady)
     return new Response('Preview — discovery disabled.', {

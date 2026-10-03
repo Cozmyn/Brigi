@@ -10,7 +10,7 @@ const config = [
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
     },
   },
-  { ignores: ['.next/**', 'node_modules/**', 'src/payload-types.ts', 'src/payload-generated-schema.ts'] },
+  { ignores: ['.next/**', '.deploy/**', 'artifacts/**', 'node_modules/**', 'src/payload-types.ts', 'src/payload-generated-schema.ts'] },
   { files: ['migrations/**/*.ts'], rules: { '@typescript-eslint/no-unused-vars': 'off' } },
   // Authenticated previews must send cookies; the public Next image optimizer does not.
   { files: ['src/components/admin/**/*.tsx'], rules: { '@next/next/no-img-element': 'off' } },

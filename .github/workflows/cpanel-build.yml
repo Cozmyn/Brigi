@@ -1,0 +1,106 @@
+name: cPanel production artifact
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: cpanel-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_DATABASE: brigitta_artifact_test
+        ports: ['127.0.0.1:3306:3306']
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint && npm run typecheck && npm run test:int
+      # Public CMS routes are dynamic: no database, legal data or contacts are baked in.
+      - name: Build for brigi.ro without database credentials
+        run: npm run build
+        env:
+          SITE_URL: https://brigi.ro
+          NEXT_PUBLIC_SERVER_URL: https://brigi.ro
+          PRODUCTION_GATES_CLOSED: 'false'
+      - name: Package complete runtime
+        run: node scripts/package-cpanel.mjs
+        env:
+          SITE_URL: https://brigi.ro
+      - name: Prepare temporary test database
+        run: npm run db:migrate && npm run seed:content
+        env:
+          DB_HOST: 127.0.0.1
+          DB_NAME: brigitta_artifact_test
+          DB_USER: root
+      - run: npx playwright install --with-deps chromium
+      - name: Test extracted artifact with production-only dependencies
+        env:
+          DB_HOST: 127.0.0.1
+          DB_NAME: brigitta_artifact_test
+          DB_USER: root
+          DB_PASSWORD: ''
+          SITE_URL: http://127.0.0.1:3100
+          NEXT_PUBLIC_SERVER_URL: https://brigi.ro
+          PRODUCTION_GATES_CLOSED: 'false'
+          PORT: '3100'
+          TEST_BASE_URL: http://127.0.0.1:3100
+          INQUIRY_RATE_LIMIT_PER_HOUR: '100'
+        run: |
+          set -euo pipefail
+          runtime="$RUNNER_TEMP/brigi-runtime"
+          git clone --no-hardlinks "$GITHUB_WORKSPACE" "$runtime"
+          git -C "$runtime" checkout -B main "$GITHUB_SHA"
+          export MEDIA_DIR="$RUNNER_TEMP/brigi-persistent-media"
+          mkdir -p "$MEDIA_DIR"
+          printf 'DEPLOY_QA_MARKER=preserve\n' > "$runtime/.env"
+          printf 'preserve\n' > "$MEDIA_DIR/qa-persistence.txt"
+          mkdir -p "$RUNNER_TEMP/cloudlinux-modules"
+          ln -s "$RUNNER_TEMP/cloudlinux-modules" "$runtime/node_modules"
+          SITE_URL=https://brigi.ro bash "$runtime/scripts/deploy-cpanel.sh" "$GITHUB_WORKSPACE/artifacts/brigi-cpanel-build.tar.gz"
+          test -L "$runtime/node_modules"
+          test "$(cat "$runtime/.env")" = 'DEPLOY_QA_MARKER=preserve'
+          test "$(cat "$MEDIA_DIR/qa-persistence.txt")" = 'preserve'
+          test ! -d "$runtime/.deploy/current/src"
+          test ! -d "$runtime/.deploy/current/node_modules/typescript"
+          node "$runtime/app.cjs" > "$RUNNER_TEMP/brigi-runtime.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true; wait "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent "$TEST_BASE_URL/admin/login" >/dev/null; then break; fi
+            kill -0 "$server_pid" || { cat "$RUNNER_TEMP/brigi-runtime.log"; exit 1; }
+            sleep 1
+          done
+          curl --fail --silent "$TEST_BASE_URL/" >/dev/null
+          npm run test:e2e
+          node scripts/check-artifact-http.mjs "$TEST_BASE_URL"
+      - name: Upload verified cPanel deployment package
+        uses: actions/upload-artifact@v4
+        with:
+          name: brigi-cpanel-build-${{ github.sha }}
+          path: |
+            artifacts/brigi-cpanel-build.tar.gz
+            artifacts/brigi-cpanel-build.tar.gz.sha256
+          compression-level: 0
+          retention-days: 30
+          if-no-files-found: error

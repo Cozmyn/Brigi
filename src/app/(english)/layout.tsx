@@ -3,6 +3,7 @@ import { getSiteContent } from '@/lib/cms'
 import { siteURL } from '@/lib/site'
 import { Analytics } from '@/components/site/Analytics'
 import '../(frontend)/globals.css'
+export const dynamic = 'force-dynamic'
 const serif = Bodoni_Moda({
   subsets: ['latin', 'latin-ext'],
   weight: ['400', '500'],
