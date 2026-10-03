@@ -1,12 +1,12 @@
-import type { GlobalConfig } from 'payload'
-import { isOwnerOrEditor } from '@/access/roles'
-
+import type { GlobalConfig } from '@/cms/model'
 export const Header: GlobalConfig = {
   slug: 'header',
-  access: { read: () => true, update: isOwnerOrEditor },
   fields: [
     {
-      name: 'navigation', type: 'array', localized: true, fields: [
+      name: 'navigation',
+      type: 'array',
+      localized: true,
+      fields: [
         { name: 'label', type: 'text', required: true },
         { name: 'url', type: 'text', required: true },
       ],
@@ -15,4 +15,3 @@ export const Header: GlobalConfig = {
     { name: 'ctaUrl', type: 'text', localized: true },
   ],
 }
-

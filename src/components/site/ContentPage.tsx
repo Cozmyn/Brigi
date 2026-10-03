@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { RichText } from '@payloadcms/richtext-lexical/react'
-import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
+import { RichText } from './RichText'
 import type { EditorialPage } from '@/lib/editorial'
 import type { SiteContent } from '@/lib/site'
 import { Packages } from './Packages'
@@ -55,7 +54,7 @@ export function ContentPage({ page, content: c }: { page: EditorialPage; content
           ))}
           {!!page.richText && (
             <div className="rich-text">
-              <RichText data={page.richText as SerializedEditorState} />
+              <RichText data={page.richText} />
             </div>
           )}
           {page.serviceArea && (

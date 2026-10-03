@@ -15,7 +15,9 @@ test('Romanian homepage, configured prices and conditional sections', async ({ p
   await page.screenshot({ path: test.info().outputPath('homepage-desktop.png'), fullPage: true })
   await page.screenshot({ path: test.info().outputPath('hero-desktop.png') })
   await page.goto('/en')
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/en$/)
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Brigitta.')
 })
 
 test('booking carries the selected package and reports validation errors', async ({ page }) => {

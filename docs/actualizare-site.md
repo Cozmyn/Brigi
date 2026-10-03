@@ -1,6 +1,6 @@
 # Administrarea website-ului Brigitta
 
-Modificările se fac în `/admin`. Website-ul folosește acum conținutul Payload. Fișierul `src/lib/site.ts` este doar baza inițială și fallback pentru un preview fără bază de date.
+Modificările se fac în `/admin`, în CMS-ul MySQL al aplicației. Fișierul `src/lib/site.ts` este baza inițială și fallback pentru un preview fără bază de date. Pentru instalare și transferul datelor existente, urmează [ghidul cPanel](cpanel.md).
 
 ## Prima actualizare
 
@@ -14,7 +14,7 @@ npm run build
 npm run start
 ```
 
-Migrația adaugă câmpurile necesare; păstrează cererile și conținutul existent. Importul de conținut este idempotent: nu înlocuiește paginile/pachetele existente; corectează doar eventualele formulări vechi care prezentau artista ca instrumentistă. Dacă existau deja pagini în CMS, revizuiește-le înainte de publicare. Primul cont creat prin ecranul inițial devine Owner. Nu există cont sau parolă prestabilită.
+Migrațiile creează tabelele MySQL. Datele din vechiul Payload se transferă separat prin export/import, înainte de seed. Seed-ul este repetabil și nu înlocuiește paginile/pachetele existente. Primul cont Owner se creează din terminal prin `npm run admin:create`. Nu există înregistrare publică ori parolă prestabilită.
 
 ## Unde modifici
 
@@ -50,7 +50,7 @@ Câmpul `sets` păstrează codul compatibil cu cererile istorice. `setCount` și
 | Imagine într-o pagină | 1800 × 1200 px | 3:2 | 150–350 KB |
 | Open Graph / social | 1200 × 630 px | 1,91:1 | sub 250 KB |
 
-WebP/AVIF sunt preferate. Lasă spațiu deasupra capului și evită subiectul lipit de margine. Punctul focal este aplicat în frontend. CMS produce variante de dimensiune; Next optimizează imaginile publice. Fisierele sunt stocate local în `public/media`: hostingul trebuie să păstreze acest director între deploy-uri și să îl includă în backup. Nu se versionează în git.
+Sunt acceptate JPG, PNG, WebP și AVIF, maximum 12 MB. Lasă spațiu deasupra capului și evită subiectul lipit de margine. Coordonatele focalX/focalY controlează punctul focal. Uploadul produce variante WebP și elimină metadatele originale. Fișierele sunt stocate în `MEDIA_DIR`, recomandat `/home/tavroro/brigi-data/media`, separat de cod. Include acest director în backup. Imaginile neaprobate pot fi văzute numai după autentificare. Ștergerea imaginilor încă folosite este blocată; înlocuirea păstrează asocierea cu secțiunile.
 
 ## Pagini noi și SEO
 
@@ -59,6 +59,8 @@ Creează o pagină cu slug fără `/`, titlu, H1, introducere și secțiuni stru
 Pentru o pagină locală selectează `location`, completează aria de servicii și scrie conținut propriu: context local, disponibilitate reală, imagini sau evenimente reale, întrebări utile. Nu genera pagini doar schimbând numele orașului. Schimbarea unui slug creează o redirecționare permanentă de la vechea adresă. Verifică legăturile din textele libere.
 
 Pagina video rămâne neindexabilă până există materiale: adaugă materialele aprobate și debifează noindex în SEO-ul paginii. Noindex global pentru preview este controlat prin `PRODUCTION_GATES_CLOSED=false`.
+
+Selectorul de limbă din editor schimbă între RO și EN. Traducerile sunt salvate și publicate separat. Paginile EN apar la `/en/slug`; homepage-ul EN și formularul sunt la `/en` și `/en/booking`. Un draft păstrează versiunea publicată anterior. Pentru eliminarea de pe website folosește **Retrage publicarea**. **Istoric versiuni** permite restaurarea unei versiuni ca ciornă. Parolele utilizatorilor se resetează din admin sau prin `npm run admin:reset`.
 
 ## Cereri
 
@@ -78,4 +80,4 @@ Nu se păstrează IP-uri, identificatori de vizitator sau trasee individuale în
 
 Configurează domeniul HTTPS prin SITE_URL și NEXT_PUBLIC_SERVER_URL, identitatea/contactul operatorului și regula de păstrare. Setează PRODUCTION_GATES_CLOSED=true doar când conținutul este pregătit. Adaugă codurile Google/Bing în Site settings și trimite `/sitemap.xml` în instrumentele lor. `/llms.txt` este experimental; nu garantează vizibilitate sau poziții.
 
-Nu publica fișiere de mediu reale, credențiale, tipurile generate sau snapshot-uri JSON ale migrațiilor. În repository se păstrează numai exemplul de variabile fără secrete și migrațiile necesare.
+Nu publica fișiere de mediu reale, credențiale, exporturi de conținut sau snapshot-uri ale bazei. Tipurile din `src/cms/types.ts` descriu numai câmpurile aplicației și sunt sigure pentru repository; nu sunt extrase din baza de date.

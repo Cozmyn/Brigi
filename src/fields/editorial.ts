@@ -1,5 +1,4 @@
-import type { Field } from 'payload'
-
+import type { Field } from '@/cms/model'
 export const faqFields: Field[] = [
   { name: 'question', type: 'text', required: true },
   { name: 'answer', type: 'textarea', required: true },

@@ -12,6 +12,8 @@ const config = [
   },
   { ignores: ['.next/**', 'node_modules/**', 'src/payload-types.ts', 'src/payload-generated-schema.ts'] },
   { files: ['migrations/**/*.ts'], rules: { '@typescript-eslint/no-unused-vars': 'off' } },
+  // Authenticated previews must send cookies; the public Next image optimizer does not.
+  { files: ['src/components/admin/**/*.tsx'], rules: { '@next/next/no-img-element': 'off' } },
 ]
 
 export default config

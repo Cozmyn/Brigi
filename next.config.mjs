@@ -1,10 +1,11 @@
-import { withPayload } from '@payloadcms/next/withPayload'
 
 const configuredURL = process.env.SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 const serverURL = new URL(configuredURL)
 const scriptPolicy = process.env.NODE_ENV === 'production' ? "script-src 'self' 'unsafe-inline'" : "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
 
 const nextConfig = {
+  experimental: { cpus: 2 },
+  serverExternalPackages: ['knex', 'mysql2'],
   async headers() {
     return [{ source: '/admin/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }] }, { source: '/api/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }, {
       source: '/:path*',
@@ -18,7 +19,6 @@ const nextConfig = {
       ],
     }]
   },
-  sassOptions: { loadPaths: ['./node_modules/@payloadcms/ui/dist/scss/'] },
   images: {
     localPatterns: [{ pathname: '/api/media/file/**' }, { pathname: '/images/brigitta/**' }, { pathname: '/media/**' }],
     qualities: [78, 100],
@@ -33,5 +33,4 @@ const nextConfig = {
   reactStrictMode: true,
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
-
+export default nextConfig

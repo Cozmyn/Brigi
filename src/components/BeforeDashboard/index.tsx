@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import './index.scss'
+import './index.css'
 type Rank = { name: string; count: number }[]
 type Overview = {
   enabled: boolean

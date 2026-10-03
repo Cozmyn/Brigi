@@ -1,12 +1,15 @@
+import { englishContent } from './english'
 import { cache } from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { draftMode, headers } from 'next/headers'
+import { authenticate } from '@/cms/auth'
+import { contentStore } from '@/cms/store'
+import { databaseConfigured } from '@/cms/db'
 import { siteContent, type SiteContent, isPublicURL } from './site'
 import { repairPublicText } from './positioning'
 import { editorialPages, type EditorialPage } from './editorial'
-import type { Media, Page } from '@/payload-types'
+import type { Media, Page } from '@/cms/types'
 
-export const getCMS = cache(async () => (process.env.DATABASE_URL ? getPayload({ config }) : null))
+export const getCMS = cache(async () => (databaseConfigured() ? contentStore : null))
 export function publicPhoto(value: number | Media | null | undefined) {
   if (!value || typeof value !== 'object' || !value.approvedForPublication || !value.url)
     return undefined
@@ -18,15 +21,15 @@ export function publicPhoto(value: number | Media | null | undefined) {
   }
 }
 const nonempty = (value: string | null | undefined, fallback: string) => value?.trim() || fallback
-export const getSiteContent = cache(async (): Promise<SiteContent> => {
+export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<SiteContent> => {
   const cms = await getCMS()
-  if (!cms) return siteContent
+  if (!cms) return locale === 'en' ? englishContent : siteContent
   const [settings, home, services, faqs, videos, songs, testimonials] = await Promise.all([
-    cms.findGlobal({ slug: 'site-settings', locale: 'ro', overrideAccess: false }),
-    cms.findGlobal({ slug: 'home-settings', locale: 'ro', depth: 1, overrideAccess: false }),
+    cms.findGlobal({ slug: 'site-settings', locale, overrideAccess: false }),
+    cms.findGlobal({ slug: 'home-settings', locale, depth: 1, overrideAccess: false }),
     cms.find({
       collection: 'services',
-      locale: 'ro',
+      locale,
       sort: 'order',
       limit: 50,
       overrideAccess: false,
@@ -40,7 +43,7 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     }),
     cms.find({
       collection: 'faq',
-      locale: 'ro',
+      locale,
       sort: 'order',
       limit: 100,
       overrideAccess: false,
@@ -48,14 +51,14 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     }),
     cms.find({
       collection: 'videos',
-      locale: 'ro',
+      locale,
       limit: 50,
       overrideAccess: false,
       where: { approvedForPublication: { equals: true } },
     }),
     cms.find({
       collection: 'repertoire',
-      locale: 'ro',
+      locale,
       sort: 'category',
       limit: 500,
       overrideAccess: false,
@@ -63,17 +66,17 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     }),
     cms.find({
       collection: 'testimonials',
-      locale: 'ro',
+      locale,
       limit: 30,
       overrideAccess: false,
       where: { and: [{ visible: { equals: true } }, { publicationConsent: { equals: true } }] },
     }),
   ])
   const [header, footer] = await Promise.all([
-    cms.findGlobal({ slug: 'header', locale: 'ro', overrideAccess: false }),
-    cms.findGlobal({ slug: 'footer', locale: 'ro', overrideAccess: false }),
+    cms.findGlobal({ slug: 'header', locale, overrideAccess: false }),
+    cms.findGlobal({ slug: 'footer', locale, overrideAccess: false }),
   ])
-  const c: SiteContent = structuredClone(siteContent)
+  const c: SiteContent = structuredClone(locale === 'en' ? englishContent : siteContent)
   if (header.navigation?.length)
     c.navigation = header.navigation
       .filter((x) => /^\/(?!\/)/.test(x.url))
@@ -83,8 +86,12 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     href: header.ctaUrl && /^\/(?!\/)/.test(header.ctaUrl) ? header.ctaUrl : '/rezervare',
   }
   c.footerText = footer.description || c.footerText
-  c.artist.phone = settings.phone ?? c.artist.phone
-  c.artist.email = settings.email ?? c.artist.email
+  const shared =
+    locale === 'en'
+      ? await cms.findGlobal({ slug: 'site-settings', locale: 'ro', overrideAccess: false })
+      : settings
+  c.artist.phone = settings.phone || shared.phone || c.artist.phone
+  c.artist.email = settings.email || shared.email || c.artist.email
   c.artist.biography = nonempty(settings.biography, c.artist.biography)
   c.artist.serviceArea = settings.geographicArea || ''
   if (settings.socialLinks)
@@ -140,7 +147,7 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     if (photo) c.photos[slot] = photo
   }
   // Once the CMS is configured, hiding all packages/FAQs must really hide them.
-  const serviceCount = await cms.count({ collection: 'services', overrideAccess: true })
+  const serviceCount = await cms.count({ collection: 'services', locale, overrideAccess: true })
   if (serviceCount.totalDocs)
     c.packages = services.docs.map((p) => ({
       id: String(p.id),
@@ -156,7 +163,7 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
       featured: Boolean(p.featured),
       features: (p.inclusions || []).map((x) => x.item),
     }))
-  const faqCount = await cms.count({ collection: 'faq', overrideAccess: true })
+  const faqCount = await cms.count({ collection: 'faq', locale, overrideAccess: true })
   if (faqCount.totalDocs)
     c.faqs = faqs.docs.map((x) => ({ question: x.question, answer: x.answer }))
   c.media = videos.docs
@@ -222,32 +229,35 @@ export function cmsPage(doc: Page): EditorialPage {
     richText: doc.content,
   }
 }
-export const getPublicPages = cache(async (): Promise<EditorialPage[]> => {
-  const cms = await getCMS()
-  if (!cms) return editorialPages
-  // Include inaccessible slugs only to suppress code fallbacks for unpublished/deactivated pages.
-  const all = await cms.find({
-    collection: 'pages',
-    locale: 'ro',
-    pagination: false,
-    depth: 1,
-    overrideAccess: true,
-    draft: false,
-  })
-  const claimed = new Set(all.docs.map((p) => p.slug))
-  return [
-    ...(all.totalDocs ? [] : editorialPages.filter((p) => !claimed.has(p.slug))),
-    ...all.docs
-      .filter((p) => p._status === 'published' && p.visible !== false && p.approvedForPublication)
-      .map(cmsPage),
-  ]
-})
-export const getHomeSEO = cache(async () => {
+export const getPublicPages = cache(
+  async (locale: 'ro' | 'en' = 'ro', allowPreview = false): Promise<EditorialPage[]> => {
+    const cms = await getCMS()
+    if (!cms) return locale === 'ro' ? editorialPages : []
+    const preview =
+      allowPreview && (await draftMode()).isEnabled && Boolean(await authenticate(await headers()))
+    const count = await cms.count({ collection: 'pages', locale, overrideAccess: true })
+    const all = await cms.find({
+      collection: 'pages',
+      locale,
+      pagination: false,
+      depth: 1,
+      overrideAccess: preview,
+      draft: preview,
+    })
+    return [
+      ...(count.totalDocs || locale === 'en' ? [] : editorialPages),
+      ...all.docs
+        .map(cmsPage)
+        .map((p) => (preview ? { ...p, seo: { ...p.seo, noindex: true } } : p)),
+    ]
+  },
+)
+export const getHomeSEO = cache(async (locale: 'ro' | 'en' = 'ro') => {
   const cms = await getCMS()
   if (!cms) return undefined
   const home = await cms.findGlobal({
     slug: 'home-settings',
-    locale: 'ro',
+    locale,
     depth: 1,
     overrideAccess: false,
   })

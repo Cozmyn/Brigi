@@ -1,4 +1,4 @@
-import { sql } from '@payloadcms/db-postgres'
+import { getDB } from '@/cms/db'
 import { getCMS } from '@/lib/cms'
 import { isOwnerOrEditor } from '@/access/roles'
 import { analyticsDay } from '@/lib/analytics'
@@ -11,10 +11,8 @@ export async function GET(request: Request) {
   const today = analyticsDay()
   const week = analyticsDay(new Date(Date.now() - 6 * 86400000))
   const month = analyticsDay(new Date(Date.now() - 29 * 86400000))
-  const result = await cms.db.drizzle.execute(
-    sql`SELECT "day", "event", "path", "referrer", "campaign", SUM("count")::int as "count" FROM "analytics_daily" WHERE "day" >= ${month} GROUP BY "day", "event", "path", "referrer", "campaign"`,
-  )
-  const rows = result.rows as {
+  const result = await getDB()('analytics_daily').where('day', '>=', month).select('day', 'event', 'path', 'referrer', 'campaign', 'count')
+  const rows = result.map(row => ({ ...row, count: Number(row.count) })) as {
     day: string
     event: string
     path: string

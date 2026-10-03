@@ -1,11 +1,8 @@
-import type { GlobalConfig } from 'payload'
+import type { GlobalConfig } from '@/cms/model'
 import { seoFields } from '@/fields/editorial'
 import { siteContent as c } from '@/lib/site'
-import { isOwnerOrEditor } from '@/access/roles'
-
 export const HomeSettings: GlobalConfig = {
   slug: 'home-settings',
-  access: { read: () => true, update: isOwnerOrEditor },
   fields: [
     { name: 'seo', type: 'group', fields: seoFields },
     { name: 'heroAccent', type: 'text', defaultValue: c.hero.title[1] },
@@ -43,7 +40,14 @@ export const HomeSettings: GlobalConfig = {
           name: 'href',
           type: 'text',
           required: true,
-          validate: (value: unknown, { previousValue }: { previousValue?: unknown }) => {
+          validate: (
+            value: unknown,
+            {
+              previousValue,
+            }: {
+              previousValue?: unknown
+            },
+          ) => {
             const v = value === undefined ? previousValue : value
             return (
               (typeof v === 'string' && /^\/(?!\/)[a-z0-9/-]*$/.test(v)) ||
@@ -90,7 +94,6 @@ export const HomeSettings: GlobalConfig = {
         },
       })),
     },
-
     { name: 'heroEyebrow', type: 'text', localized: true },
     { name: 'heroTitle', type: 'text', localized: true },
     { name: 'heroSubtitle', type: 'textarea', localized: true },

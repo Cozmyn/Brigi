@@ -1,57 +1,9 @@
 import { seoFields, sectionFields, faqFields } from '@/fields/editorial'
-import type { CollectionConfig } from 'payload'
-import {
-  canManageContent,
-  canPublish,
-  isOwnerOrEditor,
-  publishedOrBackOffice,
-} from '@/access/roles'
-
+import type { CollectionConfig } from '@/cms/model'
 export const Pages: CollectionConfig = {
   slug: 'pages',
   versions: { drafts: { autosave: true }, maxPerDoc: 30 },
   admin: { useAsTitle: 'title', defaultColumns: ['title', 'slug', '_status', 'updatedAt'] },
-  access: {
-    create: canManageContent,
-    delete: isOwnerOrEditor,
-    read: publishedOrBackOffice,
-    update: canManageContent,
-  },
-  hooks: {
-    afterChange: [
-      async ({ doc, previousDoc, req }) => {
-        if (previousDoc?.slug && previousDoc.slug !== doc.slug) {
-          const from = `/${previousDoc.slug}`
-          const existing = await req.payload.find({
-            collection: 'redirects',
-            where: { from: { equals: from } },
-            limit: 1,
-            req,
-            overrideAccess: true,
-          })
-          const data = { from, to: `/${doc.slug}`, code: '308' as const, active: true }
-          if (existing.docs[0])
-            await req.payload.update({
-              collection: 'redirects',
-              id: existing.docs[0].id,
-              data,
-              req,
-              overrideAccess: true,
-            })
-          else
-            await req.payload.create({ collection: 'redirects', data, req, overrideAccess: true })
-        }
-        return doc
-      },
-    ],
-    beforeChange: [
-      ({ data, req }) => {
-        if ((req.user as { role?: string } | undefined)?.role === 'automation')
-          data._status = 'draft'
-        return data
-      },
-    ],
-  },
   fields: [
     { name: 'title', type: 'text', required: true, localized: true },
     {
@@ -60,7 +12,14 @@ export const Pages: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
-      validate: (value: unknown, { previousValue }: { previousValue?: unknown }) => {
+      validate: (
+        value: unknown,
+        {
+          previousValue,
+        }: {
+          previousValue?: unknown
+        },
+      ) => {
         const v = value === undefined ? previousValue : value
         return (
           (typeof v === 'string' &&
@@ -117,7 +76,6 @@ export const Pages: CollectionConfig = {
       name: 'approvedForPublication',
       type: 'checkbox',
       defaultValue: false,
-      access: { update: canPublish },
     },
   ],
 }

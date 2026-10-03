@@ -7,19 +7,27 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      matrix:
+        database: ['mariadb:10.11', 'mysql:8.0']
     services:
-      postgres:
-        image: postgres:16
+      database:
+        image: ${{ matrix.database }}
         env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: brigitta_test
-        ports: ['5432:5432']
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_DATABASE: brigitta_test
+        ports: ['127.0.0.1:3306:3306']
         options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 10s
+          --health-cmd "mysqladmin ping -h 127.0.0.1 --silent" --health-interval 10s
           --health-timeout 5s --health-retries 5
     env:
-      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/brigitta_test
-      PAYLOAD_SECRET: ci-only-secret-ci-only-secret
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_NAME: brigitta_test
+      DB_USER: root
+      DB_PASSWORD: ''
+      INQUIRY_RATE_LIMIT_PER_HOUR: '100'
       SITE_URL: http://127.0.0.1:3000
       NEXT_PUBLIC_SERVER_URL: http://127.0.0.1:3000
       PRODUCTION_GATES_CLOSED: 'false'
@@ -32,8 +40,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:int
       - run: npm run db:migrate
+      - run: npm run test:import
+      - run: npm run test:db
       - run: npm run seed:content
         timeout-minutes: 3
+      - run: npm run seed:content
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
@@ -41,7 +52,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: browser-qa
+          name: browser-qa-${{ strategy.job-index }}
           path: |
             playwright-report/
             test-results/
