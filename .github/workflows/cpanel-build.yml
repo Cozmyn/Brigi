@@ -35,6 +35,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Check CloudLinux shell compatibility
+        run: |
+          bash -n scripts/deploy-cpanel.sh
+          npm run test:int -- tests/int/deploy.int.spec.ts
       - run: npm run lint && npm run typecheck && npm run test:int
       # Public CMS routes are dynamic: no database, legal data or contacts are baked in.
       - name: Build for brigi.ro without database credentials
@@ -83,6 +87,8 @@ jobs:
           test "$(cat "$MEDIA_DIR/qa-persistence.txt")" = 'preserve'
           test ! -d "$runtime/.deploy/current/src"
           test ! -d "$runtime/.deploy/current/node_modules/typescript"
+          test ! -e "$runtime/.deploy/current/archive-entries.txt"
+          test -f "$runtime/tmp/restart.txt"
           node "$runtime/app.cjs" > "$RUNNER_TEMP/brigi-runtime.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true; wait "$server_pid" 2>/dev/null || true' EXIT

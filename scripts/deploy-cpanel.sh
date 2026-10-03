@@ -26,6 +26,8 @@ trap '[[ -z ${stage:-} ]] || rm -rf -- "$stage"' EXIT
 
 # Refuse links, devices, path traversal and all files outside the package allowlist.
 LC_ALL=C tar --quoting-style=escape -tvzf "$archive" | awk 'substr($0,1,1)!="-" && substr($0,1,1)!="d" {exit 1}' || fail 'Archive contains non-regular entries.'
+entries_file="$stage/archive-entries.txt"
+tar -tzf "$archive" > "$entries_file" || fail 'Cannot list archive entries.'
 while IFS= read -r entry; do
   entry=${entry#./}
   [[ -z $entry ]] && continue
@@ -35,7 +37,8 @@ while IFS= read -r entry; do
     *) fail "Unexpected archive entry: $entry" ;;
   esac
   [[ $entry != public/media && $entry != public/media/* ]] || fail 'Media uploads are not release assets.'
-done < <(tar -tzf "$archive")
+done < "$entries_file"
+rm -f -- "$entries_file"
 tar --no-same-owner --no-same-permissions -xzf "$archive" -C "$stage"
 artifact_commit=$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).commit' "$stage/release.json")
 [[ $artifact_commit == "$commit" ]] || fail 'Artifact commit does not match git HEAD. Download the build for this exact commit.'
