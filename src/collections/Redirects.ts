@@ -1,9 +1,6 @@
-import type { CollectionConfig } from 'payload'
-import { isOwnerOrEditor } from '@/access/roles'
-
+import type { CollectionConfig } from '@/cms/model'
 export const Redirects: CollectionConfig = {
   slug: 'redirects',
-  access: { create: isOwnerOrEditor, delete: isOwnerOrEditor, read: () => true, update: isOwnerOrEditor },
   fields: [
     { name: 'from', type: 'text', required: true, unique: true },
     { name: 'to', type: 'text', required: true },
@@ -11,4 +8,3 @@ export const Redirects: CollectionConfig = {
     { name: 'active', type: 'checkbox', defaultValue: true },
   ],
 }
-

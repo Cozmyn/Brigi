@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted.
+Superseded by [ADR 0002](0002-mysql-cpanel.md). Historical rationale only; Payload and PostgreSQL are no longer runtime dependencies.
 
 ## Context
 

@@ -1,9 +1,6 @@
-import type { CollectionConfig } from 'payload'
-import { approvedOrBackOffice, canManageContent, canPublish, isOwnerOrEditor } from '@/access/roles'
-
+import type { CollectionConfig } from '@/cms/model'
 export const Videos: CollectionConfig = {
   slug: 'videos',
-  access: { create: canManageContent, delete: isOwnerOrEditor, read: approvedOrBackOffice, update: canManageContent },
   fields: [
     { name: 'title', type: 'text', required: true, localized: true },
     { name: 'eventType', type: 'select', options: ['wedding', 'corporate', 'private', 'other'] },
@@ -13,6 +10,6 @@ export const Videos: CollectionConfig = {
     { name: 'file', type: 'upload', relationTo: 'media' },
     { name: 'captions', type: 'upload', relationTo: 'media' },
     { name: 'featured', type: 'checkbox', defaultValue: false },
-    { name: 'approvedForPublication', type: 'checkbox', defaultValue: false, access: { update: canPublish } },
+    { name: 'approvedForPublication', type: 'checkbox', defaultValue: false },
   ],
 }

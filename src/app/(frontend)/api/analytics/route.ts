@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { sql } from '@payloadcms/db-postgres'
+import { getDB } from '@/cms/db'
 import { getCMS } from '@/lib/cms'
 import { siteURL } from '@/lib/site'
 import { analyticsDay, analyticsSchema } from '@/lib/analytics'
@@ -52,13 +52,11 @@ export async function POST(request: Request) {
     const key = createHash('sha256')
       .update(JSON.stringify([day, event, path, referrer, campaign]))
       .digest('hex')
-    await cms.db.drizzle.execute(
-      sql`INSERT INTO "analytics_daily" ("key","day","event","path","referrer","campaign","count") VALUES (${key},${day},${event},${path},${referrer},${campaign},1) ON CONFLICT ("key") DO UPDATE SET "count" = "analytics_daily"."count" + 1`,
-    )
+    const db = getDB()
+    await db('analytics_daily').insert({ key, day, event, path, referrer, campaign, count: 1 })
+      .onConflict('key').merge({ count: db.raw('count + 1') })
     if (cleanedDay !== day) {
-      await cms.db.drizzle.execute(
-        sql`DELETE FROM "analytics_daily" WHERE "day" < ${analyticsDay(new Date(now - 90 * 86400000))}`,
-      )
+      await db('analytics_daily').where('day', '<', analyticsDay(new Date(now - 90 * 86400000))).delete()
       cleanedDay = day
     }
     return new Response(null, { status: 204 })

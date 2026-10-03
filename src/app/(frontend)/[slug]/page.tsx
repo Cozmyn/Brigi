@@ -25,7 +25,7 @@ export async function generateMetadata({
       '/rezervare',
       c,
     )
-  const page = (await getPublicPages()).find((p) => p.slug === slug)
+  const page = (await getPublicPages('ro', true)).find((p) => p.slug === slug)
   if (page)
     return pageMetadata(page.title, page.description, `/${slug}`, c, {
       ...page.seo,
@@ -52,7 +52,7 @@ export default async function RomanianPage({
   const { slug } = await params
   if (routeAliases[slug]) permanentRedirect(routeAliases[slug])
   const c = await getSiteContent()
-  const pages = await getPublicPages()
+  const pages = await getPublicPages('ro', true)
   const page = pages.find((p) => p.slug === slug)
   const { pachet, selectie } = await searchParams
   const selected = c.packages.find((p) => p.id === selectie)

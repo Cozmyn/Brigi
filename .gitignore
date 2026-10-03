@@ -8,8 +8,14 @@ node_modules
 next-env.d.ts
 .vercel
 
-# Payload default media upload directory
+# Legacy and current private media directories
 public/media/
+storage/
+tmp/
+imports/
+backups/
+*.sql
+*.sql.gz
 
 public/robots.txt
 public/sitemap*.xml

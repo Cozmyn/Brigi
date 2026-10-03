@@ -1,5 +1,7 @@
 # A doua etapă: design, publicare și descoperire
 
+Notă istorică: acest raport descrie etapa de design din 1 octombrie. Migrarea ulterioară a înlocuit Payload/PostgreSQL cu CMS-ul MySQL/MariaDB și a mutat rate-limiturile în baza comună. Configurația actuală este documentată în [ghidul cPanel](cpanel.md).
+
 Păstrat: Next.js / Payload / PostgreSQL, roluri, colecții, formularul validat, persistența cererilor, protecțiile anti-spam, idempotency, linkurile istorice și optimizarea imaginilor.
 
 Îmbunătățit: sistem tipografic Bodoni Moda + Manrope, paletă petrol/mineral/citric, compoziția hero, ritmul secțiunilor, pachete și lectură pe mobil. Mișcarea folosește CSS și respectă prefers-reduced-motion. Nu există autoplay sau bibliotecă de animații nouă.

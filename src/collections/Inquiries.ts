@@ -1,50 +1,4 @@
-import type {
-  CollectionAfterChangeHook,
-  CollectionBeforeChangeHook,
-  CollectionConfig,
-  PayloadRequest,
-} from 'payload'
-
-const ownerOrAuthorizedEditor = ({ req }: { req: PayloadRequest }) => {
-  const user = req.user as
-    { active?: boolean; role?: string; canAccessInquiries?: boolean } | undefined
-  return Boolean(
-    user?.active !== false &&
-    (user?.role === 'owner' || (user?.role === 'editor' && user?.canAccessInquiries)),
-  )
-}
-
-const setDefaults: CollectionBeforeChangeHook = ({ data, operation }) => {
-  if (operation === 'create') {
-    const created = new Date()
-    data.status = 'new'
-    data.isUnread = true
-    data.dueAt = new Date(created.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString()
-  }
-  return data
-}
-
-const auditStatus: CollectionAfterChangeHook = async ({ doc, previousDoc, operation, req }) => {
-  if (operation === 'update' && previousDoc?.status !== doc.status && req.user) {
-    await req.payload.create({
-      collection: 'audit-events',
-      data: {
-        action: 'inquiry_status_changed',
-        entityType: 'inquiry',
-        entityId: String(doc.id),
-        fromValue: previousDoc?.status,
-        toValue: doc.status,
-        actor: (req.user as { id?: string | number }).id
-          ? String((req.user as { id?: string | number }).id)
-          : 'system',
-      },
-      req,
-      overrideAccess: true,
-    })
-  }
-  return doc
-}
-
+import type { CollectionConfig } from '@/cms/model'
 export const Inquiries: CollectionConfig = {
   slug: 'inquiries',
   admin: {
@@ -59,33 +13,6 @@ export const Inquiries: CollectionConfig = {
       'packageInterest',
       'status',
       'dueAt',
-    ],
-  },
-  access: {
-    admin: ownerOrAuthorizedEditor,
-    create: () => false,
-    delete: ownerOrAuthorizedEditor,
-    read: ownerOrAuthorizedEditor,
-    update: ownerOrAuthorizedEditor,
-  },
-  hooks: {
-    beforeChange: [setDefaults],
-    afterChange: [auditStatus],
-    afterRead: [
-      async ({ doc, req }) => {
-        const openedDirectly = Boolean(req.routeParams?.id)
-        if (openedDirectly && doc.status === 'new' && doc.isUnread && req.user) {
-          await req.payload.update({
-            collection: 'inquiries',
-            id: doc.id,
-            data: { status: 'read', isUnread: false },
-            req,
-            overrideAccess: true,
-          })
-          return { ...doc, status: 'read', isUnread: false }
-        }
-        return doc
-      },
     ],
   },
   fields: [

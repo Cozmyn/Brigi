@@ -9,7 +9,7 @@ type Errors = Record<string, string>
 export function BookingForm({
   content: c,
   selectedPackageName = '',
-  locale: _locale,
+  locale = 'ro',
   initialPackage = 'unsure',
 }: {
   content: Pick<SiteContent, 'booking' | 'packages' | 'events'>
@@ -17,6 +17,8 @@ export function BookingForm({
   locale?: Locale
   initialPackage?: string
 }) {
+  const en = locale === 'en'
+  const labels: Record<string, string> = { eventType: 'Event type *', eventDate: 'Event date *', approximateTime: 'Approximate time', guestCount: 'Approximate guests *', city: 'City / town *', county: 'County / region *', venue: 'Venue', packageInterest: 'Performance package *', musicPreferences: 'Musical preferences', approximateBudget: 'Approximate budget (optional)', name: 'Name *', phone: 'Phone *', email: 'Email *', preferredContact: 'Preferred contact method', message: 'Message / additional details' }
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
   const [errors, setErrors] = useState<Errors>({})
   const packageToken = (p: (typeof c.packages)[number]) =>
@@ -71,7 +73,7 @@ export function BookingForm({
     const payload = {
       ...data,
       ...attribution.current,
-      locale: 'ro',
+      locale,
       packageInterest: packageValue.split(':')[0],
       selectedPackageName: c.packages.find((p) => packageToken(p) === packageValue)?.name || '',
       privacyAcknowledged: data.privacyAcknowledged === 'on',
@@ -80,7 +82,7 @@ export function BookingForm({
     const parsed = inquirySchema.safeParse(payload)
     if (!parsed.success) {
       const next: Errors = {}
-      for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message
+      for (const issue of parsed.error.issues) next[String(issue.path[0])] = en ? 'Please check this field.' : issue.message
       focusErrors(next)
       return
     }
@@ -126,7 +128,7 @@ export function BookingForm({
   })
   const field = (name: string, label: string, children: React.ReactNode, wide = false) => (
     <div className={`field ${wide ? 'wide' : ''}`}>
-      <label htmlFor={name}>{label}</label>
+      <label htmlFor={name}>{en ? labels[name] || label : label}</label>
       {children}
       {errors[name] && (
         <span className="field-error" id={`${name}-error`}>
@@ -141,11 +143,11 @@ export function BookingForm({
         <span className="success-mark" aria-hidden="true">
           ✓
         </span>
-        <p className="eyebrow">Cerere primită</p>
+        <p className="eyebrow">{en ? 'Inquiry received' : 'Cerere primită'}</p>
         <h2>{c.booking.successTitle}</h2>
         <p>{c.booking.successText}</p>
-        <Link className="text-link" href="/">
-          Înapoi la pagina principală ↗
+        <Link className="text-link" href={en ? '/en' : '/'}>
+          {en ? 'Back to homepage' : 'Înapoi la pagina principală'} ↗
         </Link>
       </div>
     )
@@ -161,7 +163,7 @@ export function BookingForm({
           track('contact_form_started')
         }
       }}
-      aria-label="Cerere de disponibilitate"
+      aria-label={en ? 'Availability inquiry' : 'Cerere de disponibilitate'}
       aria-busy={status === 'submitting'}
     >
       {errors.form && (
@@ -170,14 +172,14 @@ export function BookingForm({
         </div>
       )}
       <fieldset>
-        <legend>01 / Evenimentul</legend>
+        <legend>01 / {en ? 'Your event' : 'Evenimentul'}</legend>
         <div className="field-grid">
           {field(
             'eventType',
             'Tip eveniment *',
             <select {...bind('eventType')} required defaultValue="">
               <option value="" disabled>
-                Alege evenimentul
+                {en ? 'Select event type' : 'Alege evenimentul'}
               </option>
               {c.events.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -227,7 +229,7 @@ export function BookingForm({
         </div>
       </fieldset>
       <fieldset>
-        <legend>02 / Programul live</legend>
+        <legend>02 / {en ? 'Live performance' : 'Programul live'}</legend>
         <div className="field-grid">
           {field(
             'packageInterest',
@@ -246,8 +248,8 @@ export function BookingForm({
                   {item.name} · {item.sets} × {item.duration} min
                 </option>
               ))}
-              <option value="unsure">Doresc o recomandare</option>
-              <option value="custom">Ofertă personalizată</option>
+              <option value="unsure">{en ? 'Help me choose' : 'Doresc o recomandare'}</option>
+              <option value="custom">{en ? 'Custom quote' : 'Ofertă personalizată'}</option>
             </select>,
             true,
           )}
@@ -257,7 +259,7 @@ export function BookingForm({
             <input
               {...bind('musicPreferences')}
               maxLength={1000}
-              placeholder="Genuri, atmosferă, cereri speciale"
+              placeholder={en ? 'Genres, atmosphere, special requests' : 'Genuri, atmosferă, cereri speciale'}
             />,
             true,
           )}
@@ -270,7 +272,7 @@ export function BookingForm({
         </div>
       </fieldset>
       <fieldset>
-        <legend>03 / Datele tale de contact</legend>
+        <legend>03 / {en ? 'Contact details' : 'Datele tale de contact'}</legend>
         <div className="field-grid">
           {field(
             'name',
@@ -299,7 +301,7 @@ export function BookingForm({
             'preferredContact',
             'Cum preferi să te contactăm?',
             <select {...bind('preferredContact')} defaultValue="phone">
-              <option value="phone">Telefon</option>
+              <option value="phone">{en ? 'Phone' : 'Telefon'}</option>
               <option value="whatsapp">WhatsApp</option>
               <option value="email">Email</option>
             </select>,
@@ -320,8 +322,7 @@ export function BookingForm({
       <label className="check-row">
         <input {...bind('privacyAcknowledged')} type="checkbox" required />
         <span>
-          Am citit <Link href="/confidentialitate">informarea privind prelucrarea datelor</Link> și
-          sunt de acord cu folosirea datelor pentru gestionarea cererii. *
+          {en ? <>I have read the <Link href="/confidentialitate" hrefLang="ro">privacy notice (Romanian)</Link> and agree to the use of my details to handle this inquiry. *</> : <>Am citit <Link href="/confidentialitate">informarea privind prelucrarea datelor</Link> și sunt de acord cu folosirea datelor pentru gestionarea cererii. *</>}
         </span>
       </label>
       {errors.privacyAcknowledged && (
@@ -330,10 +331,10 @@ export function BookingForm({
         </span>
       )}
       <button className="button" type="submit" disabled={status === 'submitting'}>
-        {status === 'submitting' ? 'Se trimite…' : c.booking.submit}
+        {status === 'submitting' ? en ? 'Sending...' : 'Se trimite…' : c.booking.submit}
         <span aria-hidden="true">↗</span>
       </button>
-      <p className="form-note">* Câmpuri obligatorii. Cererea nu confirmă rezervarea.</p>
+      <p className="form-note">{en ? '* Required fields. An inquiry does not confirm a booking.' : '* Câmpuri obligatorii. Cererea nu confirmă rezervarea.'}</p>
     </form>
   )
 }

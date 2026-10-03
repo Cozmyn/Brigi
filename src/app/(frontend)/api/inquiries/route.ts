@@ -1,9 +1,8 @@
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-import { REST_GET, REST_PATCH, REST_DELETE, REST_OPTIONS } from '@payloadcms/next/routes'
+import { contentStore } from '@/cms/store'
+import { handleAdminAPI } from '@/cms/api'
 import { inquirySchema, normalizePhone } from '@/lib/inquiry'
-
-const attempts = new Map<string, number[]>()
+import { rateLimit } from '@/cms/auth'
+import { readBody } from '@/cms/http'
 const HOUR = 60 * 60 * 1000
 
 function getIP(request: Request) {
@@ -25,23 +24,17 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid request.' }, { status: 403 })
   }
 
-  for (const [key, times] of attempts)
-    if (!times.some((time) => Date.now() - time < HOUR)) attempts.delete(key)
   const ip = getIP(request)
-  const now = Date.now()
   const limit = Number(process.env.INQUIRY_RATE_LIMIT_PER_HOUR || 5)
-  const recent = (attempts.get(ip) || []).filter((time) => now - time < HOUR)
-  if (recent.length >= limit) return Response.json({ error: 'Too many requests.' }, { status: 429 })
-  attempts.set(ip, [...recent, now])
+  try {
+    if (!await rateLimit(`inquiry:${ip}`, limit, HOUR)) return Response.json({ error: 'Too many requests.' }, { status: 429 })
+  } catch { return Response.json({ error: 'Service temporarily unavailable.' }, { status: 503 }) }
 
   if (Number(request.headers.get('content-length') || 0) > 16384)
     return Response.json({ error: 'Request too large.' }, { status: 413 })
   let body: unknown
   try {
-    const raw = await request.text()
-    if (new TextEncoder().encode(raw).length > 16384)
-      return Response.json({ error: 'Request too large.' }, { status: 413 })
-    body = JSON.parse(raw)
+    body = JSON.parse((await readBody(request, 16384)).toString())
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400 })
   }
@@ -59,8 +52,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid request.' }, { status: 400 })
 
   try {
-    const payload = await getPayload({ config: configPromise })
-    const existing = await payload.find({
+    const existing = await contentStore.find({
       collection: 'inquiries',
       where: { idempotencyKey: { equals: parsed.data.idempotencyKey } },
       limit: 1,
@@ -68,21 +60,16 @@ export async function POST(request: Request) {
     })
     if (existing.totalDocs > 0) return Response.json({ ok: true }, { status: 200 })
     const { website: _honeypot, ...data } = parsed.data
-    await payload.create({
+    await contentStore.create({
       collection: 'inquiries',
       data: { ...data, status: 'new', phone: normalizePhone(data.phone) },
       overrideAccess: true,
     })
     return Response.json({ ok: true }, { status: 201 })
-  } catch {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ER_DUP_ENTRY') return Response.json({ ok: true })
     return Response.json({ error: 'The enquiry could not be saved.' }, { status: 500 })
   }
 }
 
-// This explicit booking route shadows the CMS collection root. Delegate admin reads
-// and bulk operations to Payload so its authentication, filters and access checks apply.
-const inquiryParams = { params: Promise.resolve({ slug: ['inquiries'] }) }
-export const GET = (request: Request) => REST_GET(configPromise)(request, inquiryParams)
-export const PATCH = (request: Request) => REST_PATCH(configPromise)(request, inquiryParams)
-export const DELETE = (request: Request) => REST_DELETE(configPromise)(request, inquiryParams)
-export const OPTIONS = (request: Request) => REST_OPTIONS(configPromise)(request, inquiryParams)
+export const GET = (request: Request) => handleAdminAPI(request, ['inquiries'])

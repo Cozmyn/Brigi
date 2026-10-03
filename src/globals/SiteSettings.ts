@@ -1,9 +1,6 @@
-import type { GlobalConfig } from 'payload'
-import { isOwnerOrEditor } from '@/access/roles'
-
+import type { GlobalConfig } from '@/cms/model'
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
-  access: { read: () => true, update: isOwnerOrEditor },
   fields: [
     { name: 'brandName', type: 'text', defaultValue: 'BRIGITTA', required: true },
     {
@@ -38,7 +35,14 @@ export const SiteSettings: GlobalConfig = {
           name: 'url',
           type: 'text',
           required: true,
-          validate: (value: unknown, { previousValue }: { previousValue?: unknown }) => {
+          validate: (
+            value: unknown,
+            {
+              previousValue,
+            }: {
+              previousValue?: unknown
+            },
+          ) => {
             const v = value === undefined ? previousValue : value
             return (typeof v === 'string' && /^https:\/\//.test(v)) || 'Adresă HTTPS completă.'
           },

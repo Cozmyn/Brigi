@@ -1,28 +1,30 @@
 import { formatPrice, type SiteContent } from '@/lib/site'
 import { TrackedLink } from './TrackedLink'
-export function Packages({ content: siteContent }: { content: SiteContent }) {
+export function Packages({ content: siteContent, locale = 'ro' }: { content: SiteContent; locale?: 'ro' | 'en' }) {
+  const en = locale === 'en'
+  const booking = en ? '/en/booking' : '/rezervare'
   if (!siteContent.packages.length) return null
   return (
     <section className="section packages-section" id="pachete">
       <div className="section-heading">
-        <p className="eyebrow">04 / Pachete live</p>
+        <p className="eyebrow">04 / {en ? 'Live packages' : 'Pachete live'}</p>
         <h2>{siteContent.headings.packages}</h2>
-        <p>Alege punctul de pornire. Împreună stabilim detaliile.</p>
+        <p>{en ? 'Choose a starting point. We will plan the details together.' : 'Alege punctul de pornire. Împreună stabilim detaliile.'}</p>
       </div>
       <div className="package-grid">
         {siteContent.packages.map((p, i) => (
           <article className={`package-card ${p.featured ? 'featured' : ''}`} key={p.id}>
             <div className="package-top">
               <span>0{i + 1}</span>
-              {p.featured && <span className="package-label">Ritmul serii</span>}
+              {p.featured && <span className="package-label">{en ? 'Featured' : 'Ritmul serii'}</span>}
             </div>
             <h3>{p.name}</h3>
             <p className="package-duration">
-              {p.sets} × {p.duration} minute
+              {p.sets} × {p.duration} {en ? 'minutes' : 'minute'}
             </p>
             <p className="package-description">{p.description}</p>
             <div className="package-price">
-              <span>{p.fromPricing ? 'de la' : 'preț'}</span>
+              <span>{p.fromPricing ? en ? 'from' : 'de la' : en ? 'price' : 'preț'}</span>
               <strong>
                 {formatPrice(p.priceFrom)}
                 <small> {p.currency === 'EUR' ? '€' : 'lei'}</small>
@@ -40,7 +42,7 @@ export function Packages({ content: siteContent }: { content: SiteContent }) {
               className="button button-outline"
               event="package_selected"
               detail={{ package: p.id }}
-              href={`/rezervare?pachet=${p.formValue}&selectie=${encodeURIComponent(p.id)}`}
+              href={`${booking}?pachet=${p.formValue}&selectie=${encodeURIComponent(p.id)}`}
             >
               {siteContent.cta.availability}
               <span aria-hidden="true">↗</span>
@@ -49,8 +51,8 @@ export function Packages({ content: siteContent }: { content: SiteContent }) {
         ))}
       </div>
       <p className="pricing-note">{siteContent.pricingNote}</p>
-      <TrackedLink className="text-link" href="/rezervare?pachet=custom">
-        Ai în minte un alt format? Discutăm despre el <span aria-hidden="true">↗</span>
+      <TrackedLink className="text-link" href={`${booking}?pachet=custom`}>
+        {en ? 'Have another format in mind? Let us discuss it.' : 'Ai în minte un alt format? Discutăm despre el'} <span aria-hidden="true">↗</span>
       </TrackedLink>
     </section>
   )
