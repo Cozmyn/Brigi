@@ -1,3 +1,4 @@
+import '@/app/(frontend)/tools.css'
 import Link from 'next/link'
 import { pageMetadata, jsonLD, structuredData } from '@/lib/seo'
 import { verifiedStaticPair } from '@/lib/hreflang'
