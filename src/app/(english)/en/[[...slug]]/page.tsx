@@ -3,6 +3,8 @@ import { notFound, permanentRedirect, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getCMS, getHomeSEO, getPublicPages, getSiteContent } from '@/lib/cms'
 import { pageMetadata, jsonLD, structuredData } from '@/lib/seo'
+import { verifiedStaticPair } from '@/lib/hreflang'
+import { publishedPageLanguagePair } from '@/lib/public-page-alternates'
 import { ArtistVisual } from '@/components/site/ArtistVisual'
 import { BookingForm } from '@/components/site/BookingForm'
 import { RichText } from '@/components/site/RichText'
@@ -17,13 +19,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = (await getPublicPages('en', true)).find((p) => p.slug === slug)
   if (slug && slug !== 'booking' && !page) return { robots: { index: false, follow: false } }
   const seo = !slug ? await getHomeSEO('en') : page?.seo
+  const languages = !slug
+    ? verifiedStaticPair('/', '/en', await getHomeSEO('ro'), seo)
+    : slug === 'booking'
+      ? verifiedStaticPair('/rezervare', '/en/booking')
+      : page ? await publishedPageLanguagePair('en', slug) : undefined
   const result = pageMetadata(
     page?.title ||
       (slug ? 'Contact Brigitta / Check availability' : 'Brigitta / Professional live vocalist'),
     page?.description || c.hero.description,
     `/en${slug ? `/${slug}` : ''}`,
     c,
-    seo,
+    { ...seo, languages },
   )
   return { ...result, openGraph: { ...result.openGraph, locale: 'en_GB' } }
 }
@@ -58,6 +65,7 @@ export default async function EnglishPage({ params, searchParams }: Props) {
     page?.faqs || false,
     c,
     Boolean(page?.showPackages) || !slug,
+    !slug || slug === 'booking' || page?.type === 'service' || Boolean(page?.showPackages),
   )
   for (const entity of graph['@graph'])
     if (entity['@type'] === 'WebPage') entity.inLanguage = 'en-GB'

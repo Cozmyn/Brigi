@@ -190,6 +190,7 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
 })
 export function cmsPage(doc: Page): EditorialPage {
   return {
+    id: doc.id,
     slug: doc.slug,
     title: doc.title,
     h1: doc.heroTitle,

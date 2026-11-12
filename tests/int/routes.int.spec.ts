@@ -15,6 +15,14 @@ describe('artist entities and offers', () => {
     expect(json).not.toContain('sameAs')
     expect(json).not.toContain('AggregateRating')
   })
+  it('uses page-type schema without claiming a service on legal/editorial pages', () => {
+    const legal = structuredData('/confidentialitate', 'Confidențialitate', false, siteContent, false, false)['@graph']
+    expect(legal.some((item) => item['@type'] === 'Service')).toBe(false)
+    expect(legal.some((item) => item['@type'] === 'WebPage')).toBe(true)
+    expect(legal.some((item) => item['@type'] === 'BreadcrumbList')).toBe(true)
+    const service = structuredData('/nunti-si-ceremonii', 'Nuntă', false, siteContent, true, true)['@graph']
+    expect(service.some((item) => item['@type'] === 'Service')).toBe(true)
+  })
   it('keeps FAQ structured data aligned with visible answers', () => {
     const faq = structuredData('/', 'Brigitta', true)['@graph'].find(
       (item) => item['@type'] === 'FAQPage',

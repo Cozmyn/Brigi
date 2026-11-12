@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import { getDB, closeDB } from './db'
 import { collections, globals } from './schema'
 import { authenticate, canManage, type User } from './auth'
+import { syncArticleRedirects } from './article-redirects'
 import {
   defaults,
   validateFields,
@@ -298,7 +299,7 @@ export class ContentStore {
       }
       if (old) await trx('cms_locales').where({ document_id: id, locale }).update(row)
       else await trx('cms_locales').insert(row)
-      // Atomic outbox: a committed lead always has a durable notification job.
+      // Pasul 2: a committed lead must always have a durable notification job.
       if (opts.collection === 'inquiries' && !old)
         await trx('inquiry_outbox').insert({ inquiry_id: id, status: 'pending' })
       await trx('cms_documents').where({ id }).update({ updated_at: trx.fn.now() })
@@ -322,6 +323,8 @@ export class ContentStore {
             )
             .delete()
       }
+      if (opts.collection === 'articles' && data._status === 'published')
+        await syncArticleRedirects(trx, id!, locale, old?.published_data, data)
       if (opts.collection === 'pages' && data._status === 'published' && old?.published_data) {
         const previous = parse(old.published_data)
         if (previous.slug && previous.slug !== data.slug) {
@@ -370,7 +373,7 @@ export class ContentStore {
       await trx('cms_audit').insert({
         actor: opts.user?.username || 'system',
         action: 'delete',
-        entity: `${collection}:${id}`,
+        entity: `${collection}:${id}` ,
       })
     })
   }

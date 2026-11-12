@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import type { Field } from '@/cms/model'
 import type { Data } from '@/cms/validation'
+import { ArticlePreviewAction } from './ArticlePreviewAction'
 const RichEditor = dynamic(() => import('./RichEditor'), {
   ssr: false,
   loading: () => <p>Se încarcă editorul...</p>,
@@ -24,6 +25,8 @@ export function Fields({
     <>
       {fields.map((f, index) => {
         if (f.admin?.hidden) return null
+        if (f.type === 'articlePreview')
+          return <ArticlePreviewAction key={index} documentID={value.id} locale={locale} />
         if (!f.name)
           return (
             <Fields
