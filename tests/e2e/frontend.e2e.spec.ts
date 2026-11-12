@@ -25,7 +25,7 @@ test('booking carries the selected package and reports validation errors', async
   await expect(page.getByLabel('Pachet dorit')).toHaveValue('2x45')
   await page.getByRole('button', { name: 'Trimite cererea' }).click()
   await expect(page.locator('[aria-invalid="true"]')).not.toHaveCount(0)
-  await expect(page.getByLabel('Email *')).toBeVisible()
+  await expect(page.getByLabel('Email (sau telefon)')).toBeVisible()
 })
 
 test('mobile pages fit and missing routes return 404', async ({ page }) => {
@@ -120,4 +120,35 @@ test('editorial pages have crawlable unique content, canonicals and working link
     (await request.post('/api/analytics', { data: { event: 'page_view', path: '/' } })).status(),
   ).toBe(403)
   expect((await request.get('/admin/login')).headers()['x-robots-tag']).toContain('noindex')
+})
+
+test('quick availability request accepts email only and an undecided date', async ({ page }) => {
+  await page.goto('/rezervare')
+  await expect(page.getByRole('button', { name: 'Cerere rapidă' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByLabel('Când are loc evenimentul?').selectOption('unknown')
+  await page.getByLabel('Tip eveniment *').selectOption('wedding')
+  await page.getByLabel('Oraș / localitate *').fill('Brașov')
+  await page.getByLabel('Nume *').fill('Cerere rapidă QA')
+  await page.getByLabel('Email (sau telefon)').fill('qa-rapid@example.com')
+  await page.locator('input[name="privacyAcknowledged"]').check()
+  await page.getByRole('button', { name: 'Trimite cererea' }).click()
+  await expect(page.getByText('Cerere primită')).toBeVisible()
+})
+
+test('parallel retries deduplicate; reusing the same key with changed data conflicts', async ({ request }) => {
+  const idempotencyKey = crypto.randomUUID()
+  const data = {
+    locale: 'ro', inquiryMode: 'quick', datePrecision: 'unknown',
+    city: 'Cluj-Napoca', eventType: 'corporate', name: 'QA Concurent',
+    phone: '0722 123 456', preferredContact: 'phone',
+    privacyAcknowledged: true, idempotencyKey,
+  }
+  const headers = { 'X-Idempotency-Key': idempotencyKey }
+  const concurrent = await Promise.all(Array.from({ length: 3 },
+    () => request.post('/api/inquiries', { data, headers })))
+  expect(concurrent.map((x) => x.status()).sort()).toEqual([200, 200, 201])
+  const conflict = await request.post('/api/inquiries', {
+    data: { ...data, name: 'Altă cerere QA' }, headers,
+  })
+  expect(conflict.status()).toBe(409)
 })
