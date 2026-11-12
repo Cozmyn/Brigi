@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import { build as compile } from 'esbuild'
 
 const root = process.cwd()
 const sha =
@@ -11,6 +12,14 @@ const out = path.join(root, 'artifacts')
 const stage = path.join(out, 'package')
 await rm(stage, { recursive: true, force: true })
 await mkdir(stage, { recursive: true })
+// Compile the idempotent CMS bootstrap for production-only Node dependencies.
+// Source TypeScript and dev tools must never be installed on the cPanel host.
+await compile({
+  entryPoints: [path.join(root, 'scripts/seed-content.ts')],
+  outfile: path.join(stage, 'seed-content.cjs'),
+  platform: 'node', format: 'cjs', target: 'node24', bundle: true,
+  packages: 'external', tsconfig: path.join(root, 'tsconfig.json'), logLevel: 'silent',
+})
 // Explicit allowlist. Never copy a workspace, .env, media, SQL exports or node_modules.
 for (const file of [
   'app.cjs',

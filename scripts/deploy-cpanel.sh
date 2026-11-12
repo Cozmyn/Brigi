@@ -33,7 +33,7 @@ while IFS= read -r entry; do
   [[ -z $entry ]] && continue
   [[ $entry != /* && $entry != *\\* && /$entry/ != */../* && /$entry/ != */.env* ]] || fail 'Unsafe archive path.'
   case "$entry" in
-    .next|.next/*|public|public/*|migrations|migrations/|migrations/mysql|migrations/mysql/*|app.cjs|server.cjs|next.config.mjs|package.json|package-lock.json|.npmrc|knexfile.mjs|runtime-check.cjs|release.json) ;;
+    .next|.next/*|public|public/*|migrations|migrations/|migrations/mysql|migrations/mysql/*|app.cjs|server.cjs|next.config.mjs|package.json|package-lock.json|.npmrc|knexfile.mjs|runtime-check.cjs|seed-content.cjs|release.json) ;;
     *) fail "Unexpected archive entry: $entry" ;;
   esac
   [[ $entry != public/media && $entry != public/media/* ]] || fail 'Media uploads are not release assets.'
@@ -53,6 +53,9 @@ cmp -s app.cjs "$stage/app.cjs" || fail 'Passenger launcher does not match the a
   export BRIGI_EXPECT_COMMIT="$commit" BRIGI_CHECK_DOMAIN=true
   node runtime-check.cjs
   node node_modules/knex/bin/cli.js --knexfile knexfile.mjs migrate:latest
+  # Fresh installations get approved, source-backed guides without manual entry.
+  # Idempotent: never replaces CMS edits or unpublished drafts on subsequent deploys.
+  node seed-content.cjs
 )
 
 release="$root/.deploy/releases/$commit-$(date +%s)"

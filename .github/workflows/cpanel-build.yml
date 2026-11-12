@@ -88,6 +88,7 @@ jobs:
           test ! -d "$runtime/.deploy/current/src"
           test ! -d "$runtime/.deploy/current/node_modules/typescript"
           test ! -e "$runtime/.deploy/current/archive-entries.txt"
+          test -f "$runtime/.deploy/current/seed-content.cjs"
           test -f "$runtime/tmp/restart.txt"
           node "$runtime/app.cjs" > "$RUNNER_TEMP/brigi-runtime.log" 2>&1 &
           server_pid=$!
