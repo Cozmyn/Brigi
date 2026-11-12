@@ -87,6 +87,8 @@ export default function BeforeDashboard() {
         <Link href="/admin/collections/media">Bibliotecă media</Link>
         <Link href="/admin/collections/videos">Înregistrări verificate</Link>
         <Link href="/admin/collections/articles">Ghiduri editoriale</Link>
+        <Link href="/admin/collections/articles/create">Articol nou fără cod</Link>
+        <Link href="/admin/seo">Plan SEO și Google</Link>
         <Link href="/admin/collections/inquiries">Solicitări</Link>
       </nav>
       {overview?.mediaReadiness && (

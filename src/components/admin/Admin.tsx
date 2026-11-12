@@ -8,6 +8,8 @@ import type { Data } from '@/cms/validation'
 import { fieldsForLocale } from '@/cms/validation'
 import { Fields } from './Fields'
 import BeforeDashboard from '@/components/BeforeDashboard'
+import SEOWorkspace from './SEOWorkspace'
+import { editorialSEOFeedback, editorialSEOSuggestion } from '@/lib/seo-editor'
 type Schemas = {
   collections: Record<string, CollectionConfig>
   globals: Record<string, CollectionConfig>
@@ -87,6 +89,7 @@ export default function Admin({
         </Link>
         <nav aria-label="Administrare">
           <Link href="/admin">Prezentare generală</Link>
+          <Link href="/admin/seo" aria-current={kind === 'seo' ? 'page' : undefined}>SEO & vizibilitate</Link>
           {Object.keys(schemas.collections).map((key) => (
             <Link
               aria-current={name === key ? 'page' : undefined}
@@ -124,6 +127,8 @@ export default function Admin({
       <main className="admin-content">
         {!kind ? (
           <BeforeDashboard />
+        ) : kind === 'seo' ? (
+          <SEOWorkspace />
         ) : schema ? (
           <Content
             key={`${kind}/${name}/${id || ''}`}
@@ -176,6 +181,9 @@ function Content({
     ? `/api/globals/${schema.slug}`
     : `/api/${schema.slug}${id && id !== 'create' ? `/${id}` : ''}`
   const localized = !['users', 'inquiries', 'media', 'redirects'].includes(schema.slug)
+  const seoEditable = schema.slug === 'articles' || schema.slug === 'pages'
+  const seoFeedback = seoEditable ? editorialSEOFeedback(data) : null
+  const seoSuggestion = seoEditable ? editorialSEOSuggestion(data) : null
   useEffect(() => {
     if (id === 'create') {
       return
@@ -458,6 +466,37 @@ function Content({
           )}
           {!(schema.slug === 'media' && id === 'create') && (
             <form className="admin-edit" onSubmit={save}>
+              {seoEditable && seoFeedback && seoSuggestion && (
+                <section className="admin-seo-editor" aria-label="Asistent SEO pentru conținut">
+                  <p className="studio-brand">BRIGITTA / SEO EDITOR</p>
+                  <h2>Previzualizare text în căutare</h2>
+                  <p className="admin-seo-preview-title">{seoFeedback.title || 'Titlu SEO de completat'}</p>
+                  <p className="admin-seo-preview-description">
+                    {seoFeedback.description || 'Rezumatul articolului sau al paginii va deveni meta descrierea.'}
+                  </p>
+                  {!!seoFeedback.issues.length && <ul className="admin-seo-warnings">
+                    {seoFeedback.issues.map((item) => <li key={item}>{item}</li>)}
+                  </ul>}
+                  <button type="button" disabled={!seoSuggestion.title} onClick={() => {
+                    const existing = data.seo && typeof data.seo === 'object' && !Array.isArray(data.seo)
+                      ? data.seo as Data : {}
+                    setData({
+                      ...data,
+                      ...(data.slug || !seoSuggestion.slug ? {} : { slug: seoSuggestion.slug }),
+                      seo: {
+                        ...existing,
+                        ...(!existing.title && seoSuggestion.title ? { title: seoSuggestion.title } : {}),
+                        ...(!existing.description && seoSuggestion.description
+                          ? { description: seoSuggestion.description } : {}),
+                      },
+                    })
+                    setEditorVersion((value) => value + 1)
+                    setDirty(true)
+                  }}>Completează slug și meta din textul existent</button>
+                  <p className="dash-note">Nu suprascrie titlul SEO sau descrierea personalizate.
+                    Nu generează recenzii, fapte sau experiențe. Google poate afișa un fragment diferit.</p>
+                </section>
+              )}
               <Fields
                 key={`${id}:${locale}:${editorVersion}`}
                 locale={locale}
