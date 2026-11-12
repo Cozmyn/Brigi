@@ -1,4 +1,5 @@
 import { seoFields, sectionFields, faqFields } from '@/fields/editorial'
+import { isContentSlug } from '@/lib/content-paths'
 import type { CollectionConfig } from '@/cms/model'
 export const Pages: CollectionConfig = {
   slug: 'pages',
@@ -12,35 +13,14 @@ export const Pages: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
-      validate: (
-        value: unknown,
-        {
-          previousValue,
-        }: {
-          previousValue?: unknown
-        },
-      ) => {
-        const v = value === undefined ? previousValue : value
-        return (
-          (typeof v === 'string' &&
-            /^(home|[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(v) &&
-            ![
-              'home',
-              'admin',
-              'api',
-              'next',
-              'en',
-              'rezervare',
-              'contact',
-              'confidentialitate',
-              'cookies',
-              'termeni',
-              'solista-nunta',
-              'solista-evenimente-corporate',
-            ].includes(v)) ||
-          'Slug simplu, fără /, spații sau rute rezervate.'
-        )
+      maxLength: 140,
+      admin: {
+        description:
+          'Păstrează URL-urile existente. Pentru conținut nou: ghiduri/titlu, formate/titlu, parteneri/nume sau evenimente-reale/titlu. Fără / la început.',
       },
+      validate: (value, { previousValue }) =>
+        isContentSlug(value === undefined ? previousValue : value) ||
+        'Folosește un slug simplu sau namespace/slug aprobat, fără rute rezervate ori parametri.',
     },
     {
       name: 'pageType',
@@ -67,15 +47,7 @@ export const Pages: CollectionConfig = {
     { name: 'heroSummary', type: 'textarea', localized: true },
     { name: 'content', type: 'richText', localized: true },
     { name: 'visible', type: 'checkbox', defaultValue: true },
-    {
-      name: 'seo',
-      type: 'group',
-      fields: seoFields,
-    },
-    {
-      name: 'approvedForPublication',
-      type: 'checkbox',
-      defaultValue: false,
-    },
+    { name: 'seo', type: 'group', fields: seoFields },
+    { name: 'approvedForPublication', type: 'checkbox', defaultValue: false },
   ],
 }
