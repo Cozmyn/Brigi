@@ -6,10 +6,12 @@ function youtubeID(value: string) {
   try {
     const u = new URL(value)
     const id =
-      u.hostname === 'youtu.be'
+      u.protocol === 'https:' && !u.username && !u.password && u.hostname === 'youtu.be'
         ? u.pathname.slice(1)
-        : ['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(u.hostname)
-          ? u.searchParams.get('v') || u.pathname.split('/').filter(Boolean)[1]
+        : u.protocol === 'https:' && !u.username && !u.password &&
+            ['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(u.hostname) &&
+            u.pathname === '/watch'
+          ? u.searchParams.get('v') || ''
           : ''
     return /^[\w-]{11}$/.test(id || '') ? id : null
   } catch {
@@ -24,14 +26,18 @@ export function MediaSection({ items: media }: { items: SiteContent['media'] }) 
   if (!items.length) return null
   return (
     <section id="live" className="section media-section">
-      <p className="eyebrow">Live & muzică originală</p>
+      <p className="eyebrow">Înregistrări aprobate și verificate</p>
       <h2>
-        Ascultă. <em>Simte.</em>
+        Ascultă. <em>Verifică.</em>
       </h2>
       <div className="media-grid">
         {items.map((item) => (
           <article key={item.url}>
             <h3>{item.title}</h3>
+            {item.recordingContext && <p className="media-context">{
+              { live: 'Recital live', studio: 'Înregistrare de studio',
+                rehearsal: 'Repetiție', other: 'Înregistrare' }[item.recordingContext]
+            }</p>}
             {item.kind === 'youtube' ? (
               playing === item.url ? (
                 <iframe

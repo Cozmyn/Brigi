@@ -29,7 +29,7 @@ export const routeMap = {
 } as const
 
 type Photo = { src: string; alt: string; position?: string }
-type Media = { title: string; url: string; kind: 'youtube' | 'spotify' | 'link' }
+type Media = { title: string; url: string; kind: 'youtube' | 'spotify' | 'link'; recordingContext?: 'live' | 'studio' | 'rehearsal' | 'other' }
 type Testimonial = { quote: string; author: string; context: string }
 
 /** Business content lives here. Empty asset URLs are intentional: never invent artist imagery. */

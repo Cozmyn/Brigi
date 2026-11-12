@@ -178,8 +178,10 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
   const faqCount = await cms.count({ collection: 'faq', locale, overrideAccess: true })
   if (faqCount.totalDocs)
     c.faqs = faqs.docs.map((x) => ({ question: x.question, answer: x.answer }))
+  // Historic video records also need explicit visibility and recording rights.
   c.media = videos.docs
-    .filter((x) => isPublicURL(x.url || ''))
+    .filter((x) => x.rightsConfirmed === true && x.visible === true &&
+      x.approvedForPublication === true && isPublicURL(x.url || ''))
     .map((x) => ({
       title: x.title,
       url: x.url!,
@@ -188,6 +190,7 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
         : x.url!.includes('spotify.com')
           ? 'spotify'
           : 'link',
+      recordingContext: x.recordingContext,
     }))
   c.songs = songs.docs.map((x) => ({
     song: x.song,
