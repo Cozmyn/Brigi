@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto'
 import { contentStore } from '@/cms/store'
 import { handleAdminAPI } from '@/cms/api'
-import { inquirySchema, normalizePhone } from '@/lib/inquiry'
+import { inquirySchema, normalizePhone, withConsentOnlyAttribution } from '@/lib/inquiry'
 import { rateLimit } from '@/cms/auth'
 import { readBody } from '@/cms/http'
 const HOUR = 60 * 60 * 1000
@@ -27,9 +28,11 @@ export async function POST(request: Request) {
   const ip = getIP(request)
   const limit = Number(process.env.INQUIRY_RATE_LIMIT_PER_HOUR || 5)
   try {
-    if (!await rateLimit(`inquiry:${ip}`, limit, HOUR)) return Response.json({ error: 'Too many requests.' }, { status: 429 })
-  } catch { return Response.json({ error: 'Service temporarily unavailable.' }, { status: 503 }) }
-
+    if (!(await rateLimit('inquiry:' + ip, limit, HOUR)))
+      return Response.json({ error: 'Too many requests.' }, { status: 429 })
+  } catch {
+    return Response.json({ error: 'Service temporarily unavailable.' }, { status: 503 })
+  }
   if (Number(request.headers.get('content-length') || 0) > 16384)
     return Response.json({ error: 'Request too large.' }, { status: 413 })
   let body: unknown
@@ -47,29 +50,46 @@ export async function POST(request: Request) {
     )
     return Response.json({ error: 'Invalid request.', fields }, { status: 422 })
   }
-  if (parsed.data.website) return Response.json({ ok: true })
   if (request.headers.get('x-idempotency-key') !== parsed.data.idempotencyKey)
     return Response.json({ error: 'Invalid request.' }, { status: 400 })
 
-  try {
+  const { website: _honeypot, ...submitted } = withConsentOnlyAttribution(parsed.data)
+  const data = {
+    ...submitted,
+    phone: normalizePhone(submitted.phone),
+    eventDate: submitted.datePrecision === 'exact' ? submitted.eventDate : '',
+    eventMonth: submitted.datePrecision === 'month' ? submitted.eventMonth : '',
+  }
+  // Reusing an idempotency key with different data cannot silently discard a new enquiry.
+  const fingerprint = createHash('sha256').update(JSON.stringify(data)).digest('hex')
+  const findExisting = async () => {
     const existing = await contentStore.find({
       collection: 'inquiries',
       where: { idempotencyKey: { equals: parsed.data.idempotencyKey } },
-      limit: 1,
-      overrideAccess: true,
+      limit: 1, overrideAccess: true,
     })
-    if (existing.totalDocs > 0) return Response.json({ ok: true }, { status: 200 })
-    const { website: _honeypot, ...data } = parsed.data
+    if (!existing.totalDocs) return null
+    return existing.docs[0].submissionFingerprint && existing.docs[0].submissionFingerprint !== fingerprint
+      ? Response.json({ error: 'Idempotency key already used for a different inquiry.' }, { status: 409 })
+      : Response.json({ ok: true }, { status: 200 })
+  }
+  try {
+    const previous = await findExisting()
+    if (previous) return previous
     await contentStore.create({
       collection: 'inquiries',
-      data: { ...data, status: 'new', phone: normalizePhone(data.phone) },
+      data: { ...data, status: 'new', submissionFingerprint: fingerprint },
       overrideAccess: true,
     })
     return Response.json({ ok: true }, { status: 201 })
   } catch (error) {
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'ER_DUP_ENTRY') return Response.json({ ok: true })
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ER_DUP_ENTRY') {
+      try {
+        const previous = await findExisting()
+        if (previous) return previous
+      } catch { /* Do not claim success if DB verification fails. */ }
+    }
     return Response.json({ error: 'The enquiry could not be saved.' }, { status: 500 })
   }
 }
-
 export const GET = (request: Request) => handleAdminAPI(request, ['inquiries'])
