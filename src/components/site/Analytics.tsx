@@ -74,7 +74,7 @@ export function Analytics({ enabled }: { enabled: boolean }) {
     try {
       localStorage.setItem(consentKey, value)
       if (value === 'no')
-        for (const key of ['brigitta:visit', 'brigitta:campaign', 'brigitta:attribution'])
+        for (const key of ['brigitta:visit', 'brigitta:campaign', 'brigitta:attribution', 'brigitta:attribution:first', 'brigitta:attribution:last'])
           sessionStorage.removeItem(key)
     } catch {
       /* Consent is still honored for this page. */

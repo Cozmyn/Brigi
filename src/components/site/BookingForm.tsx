@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { inquirySchema } from '@/lib/inquiry'
+import { getInquiryAttribution } from '@/lib/attribution'
 import { type SiteContent, type Locale } from '@/lib/site'
 import { track } from './TrackedLink'
 
@@ -18,9 +19,11 @@ export function BookingForm({
   initialPackage?: string
 }) {
   const en = locale === 'en'
-  const labels: Record<string, string> = { eventType: 'Event type *', eventDate: 'Event date *', approximateTime: 'Approximate time', guestCount: 'Approximate guests *', city: 'City / town *', county: 'County / region *', venue: 'Venue', packageInterest: 'Performance package *', musicPreferences: 'Musical preferences', approximateBudget: 'Approximate budget (optional)', name: 'Name *', phone: 'Phone *', email: 'Email *', preferredContact: 'Preferred contact method', message: 'Message / additional details' }
+  const labels: Record<string, string> = { eventType: 'Event type *', eventDate: 'Event date', approximateTime: 'Approximate time', guestCount: 'Approximate guests', city: 'City / town *', county: 'County / region', venue: 'Venue', packageInterest: 'Performance package *', musicPreferences: 'Musical preferences', approximateBudget: 'Approximate budget (optional)', name: 'Name *', phone: 'Phone (or email)', email: 'Email (or phone)', preferredContact: 'Preferred contact method', message: 'Message / additional details' }
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
   const [errors, setErrors] = useState<Errors>({})
+  const [mode, setMode] = useState<'quick' | 'detailed'>(selectedPackageName || initialPackage !== 'unsure' ? 'detailed' : 'quick')
+  const [datePrecision, setDatePrecision] = useState<'exact' | 'month' | 'unknown'>('exact')
   const packageToken = (p: (typeof c.packages)[number]) =>
     c.packages.filter((x) => x.formValue === p.formValue).length > 1
       ? `${p.formValue}:${p.id}`
@@ -32,32 +35,7 @@ export function BookingForm({
   const formRef = useRef<HTMLFormElement>(null)
   const idempotencyKey = useRef('')
   const started = useRef(false)
-  const attribution = useRef<Record<string, string>>({})
-  useEffect(() => {
-    idempotencyKey.current = crypto.randomUUID()
-    const params = new URLSearchParams(window.location.search)
-    const value: Record<string, string> = {
-      landingPath: window.location.pathname,
-      referrer: document.referrer ? new URL(document.referrer).origin : '',
-    }
-    for (const [query, field] of [
-      ['utm_source', 'utmSource'],
-      ['utm_medium', 'utmMedium'],
-      ['utm_campaign', 'utmCampaign'],
-      ['utm_content', 'utmContent'],
-      ['utm_term', 'utmTerm'],
-    ]) {
-      if (params.get(query)) value[field] = params.get(query)!.slice(0, 120)
-    }
-    try {
-      const allowed = localStorage.getItem('brigitta:analytics-consent') === 'yes'
-      const saved = allowed ? sessionStorage.getItem('brigitta:attribution') : null
-      if (allowed && !saved) sessionStorage.setItem('brigitta:attribution', JSON.stringify(value))
-      attribution.current = saved ? JSON.parse(saved) : value
-    } catch {
-      attribution.current = value
-    }
-  }, [])
+  useEffect(() => { idempotencyKey.current = crypto.randomUUID() }, [])
   const focusErrors = (next: Errors) => {
     setErrors(next)
     requestAnimationFrame(() => {
@@ -70,12 +48,17 @@ export function BookingForm({
     event.preventDefault()
     if (status === 'submitting') return
     const data = Object.fromEntries(new FormData(event.currentTarget).entries())
+    if (!idempotencyKey.current) idempotencyKey.current = crypto.randomUUID()
     const payload = {
       ...data,
-      ...attribution.current,
+      ...getInquiryAttribution(),
       locale,
+      inquiryMode: mode,
+      datePrecision,
       packageInterest: packageValue.split(':')[0],
       selectedPackageName: c.packages.find((p) => packageToken(p) === packageValue)?.name || '',
+      preferredContact: !String(data.phone || '').trim() && String(data.email || '').trim()
+        ? 'email' : data.preferredContact,
       privacyAcknowledged: data.privacyAcknowledged === 'on',
       idempotencyKey: idempotencyKey.current,
     }
@@ -171,6 +154,18 @@ export function BookingForm({
           {errors.form}
         </div>
       )}
+      <div className="booking-mode-switch" role="group" aria-label={en ? 'Inquiry type' : 'Tip cerere'}>
+        <button type="button" aria-pressed={mode === 'quick'} onClick={() => setMode('quick')}>
+          {en ? 'Quick inquiry' : 'Cerere rapidă'}
+        </button>
+        <button type="button" aria-pressed={mode === 'detailed'} onClick={() => setMode('detailed')}>
+          {en ? 'Add event details' : 'Adaugă detaliile evenimentului'}
+        </button>
+      </div>
+      <p className="form-note">
+        {en ? 'You can ask for availability even if the date is undecided. One contact method is enough.'
+          : 'Poți solicita disponibilitatea chiar dacă nu știi data exactă. Este suficient telefonul sau emailul.'}
+      </p>
       <fieldset>
         <legend>01 / {en ? 'Your event' : 'Evenimentul'}</legend>
         <div className="field-grid">
@@ -189,24 +184,39 @@ export function BookingForm({
             </select>,
           )}
           {field(
+            'datePrecision',
+            'Când are loc evenimentul?',
+            <select {...bind('datePrecision')} value={datePrecision}
+              onChange={(event) => setDatePrecision(event.target.value as 'exact' | 'month' | 'unknown')}>
+              <option value="exact">{en ? 'Exact date' : 'Știu data exactă'}</option>
+              <option value="month">{en ? 'Approximate month' : 'Știu doar luna'}</option>
+              <option value="unknown">{en ? 'Not decided yet' : 'Nu știu încă'}</option>
+            </select>,
+            true,
+          )}
+          {datePrecision === 'exact' && field(
             'eventDate',
             'Data evenimentului *',
             <input {...bind('eventDate')} type="date" required />,
           )}
-          {field(
+          {datePrecision === 'month' && field(
+            'eventMonth',
+            'Luna aproximativă *',
+            <input {...bind('eventMonth')} type="month" required />,
+          )}
+          {mode === 'detailed' && field(
             'approximateTime',
             'Ora aproximativă',
             <input {...bind('approximateTime')} type="time" />,
           )}
-          {field(
+          {mode === 'detailed' && field(
             'guestCount',
-            'Număr aproximativ de invitați *',
+            'Număr aproximativ de invitați',
             <input
               {...bind('guestCount')}
               type="number"
               min="1"
               max="100000"
-              required
               inputMode="numeric"
             />,
           )}
@@ -215,12 +225,12 @@ export function BookingForm({
             'Oraș / localitate *',
             <input {...bind('city')} autoComplete="address-level2" maxLength={120} required />,
           )}
-          {field(
+          {mode === 'detailed' && field(
             'county',
-            'Județ *',
-            <input {...bind('county')} autoComplete="address-level1" maxLength={120} required />,
+            'Județ',
+            <input {...bind('county')} autoComplete="address-level1" maxLength={120} />,
           )}
-          {field(
+          {mode === 'detailed' && field(
             'venue',
             'Locație / numele locației',
             <input {...bind('venue')} maxLength={160} />,
@@ -228,7 +238,7 @@ export function BookingForm({
           )}
         </div>
       </fieldset>
-      <fieldset>
+      <fieldset hidden={mode === 'quick'}>
         <legend>02 / {en ? 'Live performance' : 'Programul live'}</legend>
         <div className="field-grid">
           {field(
@@ -281,20 +291,19 @@ export function BookingForm({
           )}
           {field(
             'phone',
-            'Telefon *',
+            'Telefon (sau email)',
             <input
               {...bind('phone')}
               type="tel"
               autoComplete="tel"
               maxLength={24}
-              required
               placeholder="07… sau +40…"
             />,
           )}
           {field(
             'email',
-            'Email *',
-            <input {...bind('email')} type="email" autoComplete="email" maxLength={254} required />,
+            'Email (sau telefon)',
+            <input {...bind('email')} type="email" autoComplete="email" maxLength={254} />,
             true,
           )}
           {field(
@@ -307,7 +316,7 @@ export function BookingForm({
             </select>,
             true,
           )}
-          {field(
+          {mode === 'detailed' && field(
             'message',
             'Mesaj / informații suplimentare',
             <textarea {...bind('message')} rows={4} maxLength={2000} />,
@@ -334,7 +343,7 @@ export function BookingForm({
         {status === 'submitting' ? en ? 'Sending...' : 'Se trimite…' : c.booking.submit}
         <span aria-hidden="true">↗</span>
       </button>
-      <p className="form-note">{en ? '* Required fields. An inquiry does not confirm a booking.' : '* Câmpuri obligatorii. Cererea nu confirmă rezervarea.'}</p>
+      <p className="form-note">{en ? '* Only the marked fields are required. An inquiry does not confirm a booking.' : '* Doar câmpurile marcate sunt obligatorii. Cererea nu confirmă rezervarea.'}</p>
     </form>
   )
 }
