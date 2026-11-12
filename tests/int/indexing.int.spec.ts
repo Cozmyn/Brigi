@@ -6,6 +6,7 @@ vi.mock('@/lib/cms', () => ({
   getSiteContent: vi.fn(async () => ({ media: [] })),
   getHomeSEO: vi.fn(async () => undefined),
 }))
+vi.mock('@/lib/public-articles', () => ({ getPublicArticles: vi.fn(async () => []) }))
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -27,9 +28,7 @@ describe('production indexing gate', () => {
     const { robots, sitemap, pageMetadata } = await loadIndexing(gate)
     expect(robots().rules).toEqual({ userAgent: '*', disallow: '/' })
     expect(await sitemap()).toEqual([])
-    expect(pageMetadata('Preview', 'Description', '/').robots).toEqual({
-      index: false, follow: true,
-    })
+    expect(pageMetadata('Preview', 'Description', '/').robots).toEqual({ index: false, follow: true })
   })
 
   it('permits approved production while retaining private exclusions', async () => {
@@ -41,11 +40,9 @@ describe('production indexing gate', () => {
     const entries = await sitemap()
     expect(entries.map((entry) => entry.url)).toContain('https://public-site.test/')
     expect(entries.every((entry) => entry.url.startsWith('https://public-site.test/'))).toBe(true)
-    expect(pageMetadata('Public', 'Description', '/').robots).toEqual({
-      index: true, follow: true,
-    })
-    expect(pageMetadata('Private', 'Description', '/private', undefined, {
-      noindex: true,
-    }).robots).toEqual({ index: false, follow: true })
+    expect(entries.some((entry) => entry.url.includes('/ghiduri'))).toBe(false)
+    expect(pageMetadata('Public', 'Description', '/').robots).toEqual({ index: true, follow: true })
+    expect(pageMetadata('Private', 'Description', '/private', undefined, { noindex: true }).robots)
+      .toEqual({ index: false, follow: true })
   })
 })
