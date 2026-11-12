@@ -25,13 +25,13 @@ async function loadMetadata(gate: string) {
 describe('English layout indexing defaults', () => {
   it.each(['', 'false', 'TRUE', '1'])('blocks indexing by default for gate %s', async (gate) => {
     const metadata = await loadMetadata(gate)
-    expect(metadata.metadataBase?.href).toBe('https://public-site.test/')
+    expect(metadata.metadataBase?.toString()).toBe('https://public-site.test/')
     expect(metadata.robots).toEqual({ index: false, follow: false })
   })
 
   it('uses the configured origin and permits indexing only for the explicit production gate', async () => {
     const metadata = await loadMetadata('true')
-    expect(metadata.metadataBase?.href).toBe('https://public-site.test/')
+    expect(metadata.metadataBase?.toString()).toBe('https://public-site.test/')
     expect(metadata.robots).toEqual({ index: true, follow: true })
   })
 })
