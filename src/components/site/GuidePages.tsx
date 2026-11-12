@@ -8,6 +8,7 @@ import { articleRedirectTarget } from '@/cms/article-redirects'
 import { articleRelatedServices } from '@/lib/article-services'
 import { readApprovedArticleImage, resolveArticleReferences, type ArticleImage } from '@/lib/article-references'
 import { articleIsIndexable, articleMetadata, articleStructuredData } from '@/lib/article-seo'
+import { verifiedHubPair, verifiedLanguagePair } from '@/lib/hreflang'
 import { jsonLD, pageMetadata } from '@/lib/seo'
 
 async function guideOrRedirect(locale: ArticleLocale, slug: string) {
@@ -49,11 +50,16 @@ function GuideShell({ locale, children }: { locale: ArticleLocale; children: Rea
 }
 
 export async function guideHubMetadata(locale: ArticleLocale) {
-  const articles = await getPublicArticles(locale)
+  const [articles, siblingArticles] = await Promise.all([
+    getPublicArticles(locale), getPublicArticles(locale === 'ro' ? 'en' : 'ro'),
+  ])
+  const ro = locale === 'ro' ? articles : siblingArticles
+  const en = locale === 'en' ? articles : siblingArticles
+  const languages = verifiedHubPair(ro, en, '/ghiduri', '/en/ghiduri')
   return pageMetadata(locale === 'en' ? 'Music and event guides' : 'Ghiduri despre muzică și evenimente',
     locale === 'en' ? 'Published guides for planning the music of your event.' : 'Ghiduri publicate pentru planificarea muzicii evenimentului.',
     locale === 'en' ? '/en/ghiduri' : '/ghiduri', await getSiteContent(locale),
-    { noindex: !articles.some((article) => articleIsIndexable(article)) })
+    { noindex: !articles.some((article) => articleIsIndexable(article)), languages })
 }
 
 export async function GuideHubPage({ locale }: { locale: ArticleLocale }) {
@@ -73,8 +79,13 @@ export async function GuideHubPage({ locale }: { locale: ArticleLocale }) {
 
 export async function guideArticleMetadata(locale: ArticleLocale, slug: string) {
   const article = await guideOrRedirect(locale, slug)
-  const image = await readApprovedArticleImage(article.seo?.image)
-  return articleMetadata(article, await getSiteContent(locale), image || undefined)
+  const [image, site, siblings] = await Promise.all([
+    readApprovedArticleImage(article.seo?.image), getSiteContent(locale),
+    getPublicArticles(locale === 'ro' ? 'en' : 'ro'),
+  ])
+  const sibling = siblings.find((item) => item.id === article.id)
+  const languages = verifiedLanguagePair(article, sibling)
+  return articleMetadata(article, site, image || undefined, languages)
 }
 
 export async function GuideArticlePage({ locale, slug }: { locale: ArticleLocale; slug: string }) {

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { LanguageAlternates } from './hreflang'
 import type { PublicArticle } from './public-articles'
 import type { ArticleImage } from './article-references'
 import { isProductionReady, siteURL, siteContent, type SiteContent } from './site'
@@ -17,11 +18,12 @@ export function articleIsIndexable(article: PublicArticle, ready = isProductionR
     articleCanonical(article) === new URL(article.path, siteURL).href
 }
 
-export function articleMetadata(article: PublicArticle, c: SiteContent = siteContent, image?: ArticleImage): Metadata {
+export function articleMetadata(article: PublicArticle, c: SiteContent = siteContent, image?: ArticleImage, languages?: LanguageAlternates): Metadata {
   const canonical = articleCanonical(article) || new URL(article.path, siteURL).href
   const metadata = pageMetadata(article.title, article.summary || '', article.path, c, {
     title: article.seo?.title, description: article.seo?.description, canonical,
     noindex: !articleIsIndexable(article), ogTitle: article.seo?.ogTitle, ogDescription: article.seo?.ogDescription,
+    languages,
   })
   return { ...metadata, openGraph: {
     ...metadata.openGraph, type: 'article', publishedTime: article.publishedAt,
