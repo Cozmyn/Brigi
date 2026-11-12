@@ -27,7 +27,7 @@ function publication(kind: string, required: string[]) {
 
 function entity(slug: string, label: string, fields: Field[], required: string[]): CollectionConfig {
   return { slug, versions: { drafts: { autosave: true }, maxPerDoc: 30 },
-    admin: { useAsTitle: 'title', description: `${label}. Fundație CMS; rutele publice nu sunt încă activate.`,
+    admin: { useAsTitle: 'title', description: `${label}. Rutele publice apar doar după aprobare și publicare explicită.`,
       defaultColumns: ['title', 'slug', '_status', 'updatedAt'] },
     fields: [{ type: 'group', validate: publication(slug, required), fields: [
       { name: 'title', type: 'text', required: true, localized: true, maxLength: 180 },

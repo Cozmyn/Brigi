@@ -17,7 +17,7 @@ export type LanguageAlternates = { 'ro-RO': string; 'en-GB': string }
 export function normalizedInternalURL(path: string, canonical: string = path): string | null {
   try {
     if (!path.startsWith('/') || path.startsWith('//') || /[\\\r\n]/.test(path)) return null
-    if (/^[\u0000-\u0020]*$/.test(canonical)) return null
+    if (!canonical.trim() || /[\\\r\n]/.test(canonical)) return null
     const origin = new URL(siteURL)
     const expected = new URL(path, origin)
     const actual = new URL(canonical, origin)
