@@ -48,6 +48,8 @@ export interface Service {
   order?: number
   visible?: boolean
   priceApproved?: boolean
+  commerciallyVerified?: boolean
+  commercialVerificationNote?: string
   _status?: 'draft' | 'published'
 }
 export interface Videos {
@@ -55,6 +57,15 @@ export interface Videos {
   createdAt: string
   updatedAt: string
   title: string
+  slug?: string
+  description?: string
+  publishedAt?: string
+  durationSeconds?: number
+  transcript?: string
+  recordingContext?: 'live' | 'studio' | 'rehearsal' | 'other'
+  rightsConfirmed?: boolean
+  visible?: boolean
+  seo?: Page['seo']
   eventType?: 'wedding' | 'corporate' | 'private' | 'other'
   kind: 'showreel' | 'full' | 'short'
   poster?: number | Media
@@ -238,6 +249,7 @@ export interface HomeSettings {
   showreelVisible?: boolean
   testimonialsVisible?: boolean
   trustStripVisible?: boolean
+  verifiedCredentials?: { label: string; sourceURL: string }[]
   sectionOrder?: (
     'events' | 'packages' | 'benefits' | 'process' | 'repertoire' | 'about' | 'faq' | 'finalCta'
   )[]

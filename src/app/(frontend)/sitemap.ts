@@ -10,6 +10,7 @@ import {
   isSelfCanonical, verifiedLanguagePair, verifiedHubPair, verifiedStaticPair,
 } from '@/lib/hreflang'
 import { isProductionReady, siteURL } from '@/lib/site'
+import { getPublicVideos, videoIsIndexable, videoLanguagePair } from '@/lib/public-videos'
 import type { EditorialPage } from '@/lib/editorial'
 
 export const dynamic = 'force-dynamic'
@@ -104,6 +105,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const item of en) entities.push(entityItem(item, ro))
   }
 
+  const [allRoVideos, allEnVideos] = await Promise.all([getPublicVideos('ro'), getPublicVideos('en')])
+  const roVideos = allRoVideos.filter((video) => videoIsIndexable(video))
+  const enVideos = allEnVideos.filter((video) => videoIsIndexable(video))
+  const videoHubLanguages = verifiedHubPair(roVideos, enVideos, '/video', '/en/video')
+  const videoEntries: MetadataRoute.Sitemap = []
+  if (roVideos.length) videoEntries.push({
+    url: new URL('/video', siteURL).href,
+    ...(videoHubLanguages ? { alternates: { languages: videoHubLanguages } } : {}),
+  })
+  if (enVideos.length) videoEntries.push({
+    url: new URL('/en/video', siteURL).href,
+    ...(videoHubLanguages ? { alternates: { languages: videoHubLanguages } } : {}),
+  })
+  for (const video of roVideos.concat(enVideos)) {
+    const siblings = video.locale === 'ro' ? enVideos : roVideos
+    const languages = videoLanguagePair(video, siblings)
+    videoEntries.push({
+      url: new URL(video.path, siteURL).href,
+      ...(languages ? { alternates: { languages } } : {}),
+    })
+  }
   const publicRo = pages.filter((page) => publicPage(page, 'ro', Boolean(c.media.length)))
   const publicEn = english.filter((page) => publicPage(page, 'en', Boolean(c.media.length)))
   const homeLanguages = verifiedStaticPair('/', '/en', home, englishHome)
@@ -121,6 +143,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...publicEn.map((page) => pageItem(page, 'en', publicRo)),
     ...guides,
     ...entities,
+    ...videoEntries,
   ]
   const seen = new Set<string>()
   return entries.filter((entry) => {

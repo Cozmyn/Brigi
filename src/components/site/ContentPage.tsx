@@ -6,8 +6,10 @@ import { Packages } from './Packages'
 import { MediaSection } from './MediaSection'
 import { ArtistVisual } from './ArtistVisual'
 import { TrackedLink } from './TrackedLink'
+import type { PublicVideo } from '@/lib/public-videos'
+import { ServiceVideoProof } from './ServiceVideoProof'
 
-export function ContentPage({ page, content: c }: { page: EditorialPage; content: SiteContent }) {
+export function ContentPage({ page, content: c, video }: { page: EditorialPage; content: SiteContent; video?: PublicVideo }) {
   return (
     <article className="inner-page">
       <section className="inner-hero">
@@ -23,6 +25,7 @@ export function ContentPage({ page, content: c }: { page: EditorialPage; content
           {page.ctaLabel || c.cta.availability} ↗
         </TrackedLink>
       </section>
+      {page.type === 'service' && video && <ServiceVideoProof video={video} />}
       <div className="editorial-layout section">
         <aside className="page-index">
           <p className="eyebrow">În această pagină</p>

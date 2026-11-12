@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test'
 
-test('Romanian homepage, configured prices and conditional sections', async ({ page }) => {
+test('Romanian homepage hides unapproved prices and shows approved content only', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Brigitta.')
   await expect(page.getByRole('link', { name: 'Verifică disponibilitatea' }).first()).toBeVisible()
-  await expect(page.locator('.package-price')).toContainText(['450', '750', '1.050'])
+  await expect(page.locator('.package-price')).toHaveCount(0)
   await expect(page.locator('iframe')).toHaveCount(0)
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.evaluate(() => document.fonts.ready)
   expect(await page.locator('body').evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(
-    /Manrope/i,
+    /sans/i,
   )
   await page.screenshot({ path: test.info().outputPath('homepage-desktop.png'), fullPage: true })
   await page.screenshot({ path: test.info().outputPath('hero-desktop.png') })
@@ -22,7 +22,7 @@ test('Romanian homepage, configured prices and conditional sections', async ({ p
 
 test('booking carries the selected package and reports validation errors', async ({ page }) => {
   await page.goto('/rezervare?pachet=2x45')
-  await expect(page.getByLabel('Pachet dorit')).toHaveValue('2x45')
+  await expect(page.getByLabel('Pachet dorit')).toHaveValue('unsure')
   await page.getByRole('button', { name: 'Trimite cererea' }).click()
   await expect(page.locator('[aria-invalid="true"]')).not.toHaveCount(0)
   await expect(page.getByLabel('Email (sau telefon)')).toBeVisible()

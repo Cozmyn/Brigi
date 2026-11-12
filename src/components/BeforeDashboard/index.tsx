@@ -5,6 +5,8 @@ import './index.css'
 type Rank = { name: string; count: number }[]
 type Overview = {
   enabled: boolean
+  mediaReadiness?: { verifiedVideoCount: number; pendingVideoReview: number;
+    heroPhotoApproved: boolean; approvedOfferCount: number; credentialSourceCount: number }
   visits: { today: number; week: number; month: number }
   views: number
   conversions: { calls: number; cta: number; starts: number; completed: number; packages: number }
@@ -82,8 +84,39 @@ export default function BeforeDashboard() {
         <Link href="/admin/collections/services">Pachete & prețuri</Link>
         <Link href="/admin/collections/pages">Pagini & SEO</Link>
         <Link href="/admin/collections/media">Bibliotecă media</Link>
+        <Link href="/admin/collections/videos">Înregistrări verificate</Link>
+        <Link href="/admin/collections/articles">Ghiduri editoriale</Link>
         <Link href="/admin/collections/inquiries">Solicitări</Link>
       </nav>
+      {overview?.mediaReadiness && (
+        <section className="dash-media-readiness" aria-labelledby="media-readiness-title">
+          <h2 id="media-readiness-title">Dovezi și conținut pentru website</h2>
+          <div className="stat-grid">
+            <Stat label="Înregistrări verificate" value={overview.mediaReadiness.verifiedVideoCount} />
+            <Stat label="Materiale de revizuit" value={overview.mediaReadiness.pendingVideoReview} />
+            <Stat label="Oferte aprobate" value={overview.mediaReadiness.approvedOfferCount} />
+            <Stat label="Acreditări cu surse" value={overview.mediaReadiness.credentialSourceCount} />
+          </div>
+          {!overview.mediaReadiness.verifiedVideoCount && (
+            <p className="dash-note" role="status">
+              Nu există video publicabil verificat în RO. Modulul demonstrativ nu este afișat pe homepage.
+              <Link href="/admin/collections/videos"> Verifică înregistrările →</Link>
+            </p>
+          )}
+          {!overview.mediaReadiness.heroPhotoApproved && (
+            <p className="dash-note" role="status">
+              Fotografia hero nu a fost aprobată în Media/Homepage. Se folosește grafica tipografică, nu o fotografie inventată.
+              <Link href="/admin/globals/home-settings"> Revizuiește homepage →</Link>
+            </p>
+          )}
+          {!overview.mediaReadiness.approvedOfferCount && (
+            <p className="dash-note" role="status">
+              Nu există oferte cu preț aprobat. Exemplele din seed rămân în draft;
+              vizitatorii pot solicita evaluare individuală.
+            </p>
+          )}
+        </section>
+      )}
       <h2>Solicitări</h2>
       <div className="stat-grid">
         <Stat label="Noi" value={stats?.newCount} accent />

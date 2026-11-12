@@ -29,7 +29,7 @@ export const routeMap = {
 } as const
 
 type Photo = { src: string; alt: string; position?: string }
-type Media = { title: string; url: string; kind: 'youtube' | 'spotify' | 'link' }
+type Media = { title: string; url: string; kind: 'youtube' | 'spotify' | 'link'; recordingContext?: 'live' | 'studio' | 'rehearsal' | 'other' }
 type Testimonial = { quote: string; author: string; context: string }
 
 /** Business content lives here. Empty asset URLs are intentional: never invent artist imagery. */
@@ -45,8 +45,8 @@ export const siteContent = {
     >,
     serviceArea: '',
     biography:
-      'Brigitta este solistă vocală, fostă concurentă la Vocea României și fostă solistă SISTEM, cu lansări muzicale proprii. Astăzi, aduce muzică românească și internațională la nunți, botezuri, evenimente corporate și petreceri private.',
-    credentials: ['Vocea României · fostă concurentă', 'SISTEM · fostă solistă', 'Lansări proprii'],
+      'Brigitta interpretează muzică vocală live pentru nunți, ceremonii, petreceri private și evenimente corporate. Programul și repertoriul se stabilesc împreună, în funcție de eveniment.',
+    credentials: [] as string[],
   },
   hero: {
     kicker: 'Solistă vocală · Nunți & evenimente',
@@ -168,7 +168,8 @@ export const siteContent = {
       features: [] as string[],
     },
   ],
-  visibility: { media: true, testimonials: true, credentials: true },
+  visibility: { media: true, testimonials: true, credentials: false },
+  verifiedCredentials: [] as { label: string; sourceURL: string }[],
   analyticsEnabled: false,
   verification: { google: '', bing: '' },
   headings: {

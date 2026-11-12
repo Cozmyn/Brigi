@@ -11,6 +11,7 @@ import { routeAliases } from '@/lib/editorial'
 import { jsonLD, pageMetadata, structuredData } from '@/lib/seo'
 import { verifiedStaticPair } from '@/lib/hreflang'
 import { publishedPageLanguagePair } from '@/lib/public-page-alternates'
+import { getPublicVideos, videoForService } from '@/lib/public-videos'
 export const revalidate = 60
 const legalKey = { confidentialitate: 'privacy', cookies: 'cookies', termeni: 'terms' } as const
 export async function generateMetadata({
@@ -94,10 +95,13 @@ export default async function RomanianPage({
   else if (page) {
     title = page.title
     const available = new Set(pages.map((p) => p.slug))
+    const videos = page.type === 'service' && c.visibility.media ? await getPublicVideos('ro') : []
+    const serviceVideo = videoForService(videos, slug)
     content = (
       <ContentPage
         page={{ ...page, related: page.related.filter((p) => available.has(p.slug)) }}
         content={c}
+        video={serviceVideo}
       />
     )
   } else if (legalKey[slug as keyof typeof legalKey]) {

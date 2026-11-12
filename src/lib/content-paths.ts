@@ -1,4 +1,4 @@
-const bases = { pages: '', articles: '/ghiduri', 'musical-formats': '/formate', partners: '/parteneri', 'case-studies': '/studii-de-caz' } as const
+const bases = { pages: '', articles: '/ghiduri', 'musical-formats': '/formate', partners: '/parteneri', 'case-studies': '/studii-de-caz', videos: '/video' } as const
 export type ContentCollection = keyof typeof bases
 export type ContentReference = { collection: ContentCollection; slug: string; locale: 'ro' | 'en' }
 export type PublicContentReference = ContentReference & { _status?: 'draft' | 'published'; visible?: boolean; approvedForPublication?: boolean }
@@ -6,7 +6,7 @@ const reservedSegments = new Set(['admin', 'api', 'next', 'en'])
 const reservedPageSlugs = new Set([
   'home', 'rezervare', 'booking', 'contact', 'confidentialitate', 'cookies', 'termeni',
   'solista-nunta', 'solista-evenimente-corporate', 'ghiduri', 'formate', 'parteneri', 'studii-de-caz',
-  'artisti', 'evenimente-reale', 'instrumente',
+  'artisti', 'evenimente-reale', 'instrumente', 'video',
 ])
 export function contentHubPath(collection: Exclude<ContentCollection, 'pages'>, locale: 'ro' | 'en'): string | null {
   if (!Object.hasOwn(bases, collection) || !bases[collection] || (locale !== 'ro' && locale !== 'en')) return null

@@ -9,6 +9,7 @@ export async function articleRelatedServices(article: PublicArticle) {
       locale: article.locale, overrideAccess: false, draft: false, depth: 0,
     })
     if (!service || service._status !== 'published' || service.visible !== true || service.priceApproved !== true ||
+        service.commerciallyVerified !== true ||
         typeof service.name !== 'string' || !service.name.trim()) return null
     return { id: service.id, name: service.name,
       href: `${article.locale === 'en' ? '/en/booking' : '/rezervare'}?selectie=${encodeURIComponent(String(service.id))}` }
