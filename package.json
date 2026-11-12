@@ -27,6 +27,7 @@
     "admin:reset": "node --import tsx scripts/admin-user.ts --reset",
     "content:import": "node --import tsx scripts/import-content.ts",
     "maintenance": "node --import tsx scripts/maintenance.ts",
+    "notify:inquiries": "node --import tsx scripts/dispatch-inquiry-notifications.ts",
     "test:db": "node --import tsx --test tests/mysql/store.test.ts",
     "test:import": "node --import tsx --test tests/mysql/import.test.ts"
   },
