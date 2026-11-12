@@ -49,10 +49,10 @@ export const siteContent = {
     credentials: [] as string[],
   },
   hero: {
-    kicker: 'Solistă vocală · Nunți & evenimente',
+    kicker: 'Solistă vocală live · Nunți, botezuri și evenimente',
     title: ['Brigitta.', 'Vocea unei seri.'],
     description:
-      'Voce live și prezență scenică. Repertoriu românesc și internațional pentru nunți, petreceri private și evenimente corporate.',
+      'Muzică vocală live pentru nunți, botezuri și evenimente corporate. Alege un moment cu repertoriu românesc sau internațional, află ce include programul și verifică disponibilitatea.',
   },
   cta: { availability: 'Verifică disponibilitatea', phone: 'Sună acum', quote: 'Cere ofertă' },
   headerCTA: { label: '', href: '/rezervare' },

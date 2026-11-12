@@ -28,6 +28,9 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
             <span className="hero-name">{c.hero.title[0]}</span>
             <br />
             <em>{c.hero.title[1]}</em>
+            <span className="hero-service-label">
+              Solistă vocală live pentru nunți și evenimente
+            </span>
           </h1>
           <p className="hero-description">{c.hero.description}</p>
           <div className="hero-actions">
@@ -49,6 +52,10 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
               {c.cta.phone} ↗
             </TrackedLink>}
           </div>
+          <p className="hero-availability-note">
+            Data nu este rezervată prin formular. Trimite localitatea și data,
+            luna estimată sau doar tipul evenimentului pentru o discuție preliminară.
+          </p>
           <div className="hero-bottom">
             <span>Românesc & internațional</span>
             <Link href="#experienta">

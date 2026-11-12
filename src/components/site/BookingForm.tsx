@@ -23,7 +23,9 @@ export function BookingForm({
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
   const [errors, setErrors] = useState<Errors>({})
   const [mode, setMode] = useState<'quick' | 'detailed'>(selectedPackageName || initialPackage !== 'unsure' ? 'detailed' : 'quick')
-  const [datePrecision, setDatePrecision] = useState<'exact' | 'month' | 'unknown'>('exact')
+  const [datePrecision, setDatePrecision] = useState<'exact' | 'month' | 'unknown'>(
+    selectedPackageName || initialPackage !== 'unsure' ? 'exact' : 'unknown',
+  )
   const packageToken = (p: (typeof c.packages)[number]) =>
     c.packages.filter((x) => x.formValue === p.formValue).length > 1
       ? `${p.formValue}:${p.id}`

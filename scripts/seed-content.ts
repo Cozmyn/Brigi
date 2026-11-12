@@ -144,9 +144,9 @@ if (!home.heroTitle)
       bookingTitle: c.booking.title,
       bookingText: c.booking.description,
       seo: {
-        title: 'Brigitta · Solistă vocală pentru nunți și evenimente',
+        title: 'Solistă nuntă și evenimente · Muzică live | Brigitta',
         description:
-          'Brigitta, solistă vocală pentru nunți, botezuri, corporate și petreceri private. Repertoriu românesc și internațional. Verifică disponibilitatea.',
+          'Brigitta, solistă vocală live pentru nunți, botezuri și evenimente corporate. Repertoriu românesc și internațional. Cere disponibilitatea și oferta.',
       },
     },
   })

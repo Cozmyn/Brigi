@@ -11,6 +11,7 @@ import { routeAliases } from '@/lib/editorial'
 import { jsonLD, pageMetadata, structuredData } from '@/lib/seo'
 import { verifiedStaticPair } from '@/lib/hreflang'
 import { publishedPageLanguagePair } from '@/lib/public-page-alternates'
+import { suggestedCommercialSEO } from '@/lib/commercial-seo'
 import { getPublicVideos, videoForService } from '@/lib/public-videos'
 export const revalidate = 60
 const legalKey = { confidentialitate: 'privacy', cookies: 'cookies', termeni: 'terms' } as const
@@ -32,7 +33,7 @@ export async function generateMetadata({
   const page = (await getPublicPages('ro', true)).find((p) => p.slug === slug)
   if (page)
     return pageMetadata(page.title, page.description, `/${slug}`, c, {
-      ...page.seo,
+      ...suggestedCommercialSEO(page),
       noindex: page.seo?.noindex || (page.type === 'media' && !c.media.length),
       languages: await publishedPageLanguagePair('ro', slug),
     })

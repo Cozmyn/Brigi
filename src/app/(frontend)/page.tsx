@@ -9,13 +9,17 @@ export async function generateMetadata() {
   const [c, roSEO, enSEO] = await Promise.all([
     getSiteContent(), getHomeSEO('ro'), getHomeSEO('en'),
   ])
-  return pageMetadata(
-    'Brigitta · Solistă vocală pentru nunți și evenimente',
-    'Brigitta, solistă vocală pentru nunți, botezuri, corporate și petreceri private. Repertoriu românesc și internațional. Verifică disponibilitatea.',
-    '/',
-    c,
-    { ...roSEO, languages: verifiedStaticPair('/', '/en', roSEO, enSEO) },
-  )
+  const defaultTitle = 'Brigitta · Solistă vocală pentru nunți și evenimente'
+  const title = 'Solistă nuntă și evenimente · Muzică live | Brigitta'
+  const description = 'Brigitta, solistă vocală live pentru nunți, botezuri și evenimente corporate. Repertoriu românesc și internațional. Cere disponibilitatea și oferta.'
+  const keepCustom = Boolean(roSEO?.title && roSEO.title !== defaultTitle)
+  return pageMetadata(title, description, '/', c, {
+    ...roSEO,
+    title: keepCustom ? roSEO?.title : title,
+    description: roSEO?.description && !roSEO.description.startsWith('Brigitta, solistă vocală pentru nunți')
+      ? roSEO.description : description,
+    languages: verifiedStaticPair('/', '/en', roSEO, enSEO),
+  })
 }
 export default async function Page() {
   const c = await getSiteContent()
