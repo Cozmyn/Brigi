@@ -2,6 +2,8 @@ import { getDB } from '@/cms/db'
 import { getCMS } from '@/lib/cms'
 import { isOwnerOrEditor } from '@/access/roles'
 import { analyticsDay } from '@/lib/analytics'
+import { getPublicVideos } from '@/lib/public-videos'
+import { getSiteContent } from '@/lib/cms'
 export async function GET(request: Request) {
   const cms = await getCMS()
   if (!cms) return Response.json({ error: 'Unavailable' }, { status: 503 })
@@ -32,7 +34,19 @@ export async function GET(request: Request) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10)
   }
-  const settings = await cms.findGlobal({ slug: 'site-settings', overrideAccess: false })
+  const [settings, videos, videoCount, site] = await Promise.all([
+    cms.findGlobal({ slug: 'site-settings', overrideAccess: false }),
+    getPublicVideos('ro'),
+    cms.count({ collection: 'videos', overrideAccess: true }),
+    getSiteContent('ro'),
+  ])
+  const mediaReadiness = {
+    verifiedVideoCount: videos.length,
+    pendingVideoReview: Math.max(0, videoCount.totalDocs - videos.length),
+    heroPhotoApproved: Boolean(site.photos.hero.src),
+    approvedOfferCount: site.packages.length,
+    credentialSourceCount: site.verifiedCredentials.length,
+  }
   const canReadLeads =
     user?.role === 'owner' ||
     Boolean(user && 'canAccessInquiries' in user && user.canAccessInquiries)
@@ -57,6 +71,7 @@ export async function GET(request: Request) {
   return Response.json(
     {
       enabled: Boolean(settings.analyticsEnabled),
+      mediaReadiness,
       visits: { today: sum('visit', today), week: sum('visit', week), month: sum('visit') },
       views: sum('page_view'),
       conversions: {
