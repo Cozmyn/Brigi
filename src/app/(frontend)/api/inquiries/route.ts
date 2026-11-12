@@ -53,7 +53,16 @@ export async function POST(request: Request) {
   if (request.headers.get('x-idempotency-key') !== parsed.data.idempotencyKey)
     return Response.json({ error: 'Invalid request.' }, { status: 400 })
 
-  const { website: _honeypot, ...submitted } = withConsentOnlyAttribution(parsed.data)
+  // Server-side feature flag wins over a stale or forged consent signal.
+  let analyticsEnabled = false
+  if (parsed.data.attributionConsent) {
+    try {
+      analyticsEnabled = (await contentStore.findGlobal({ slug: 'site-settings' })).analyticsEnabled === true
+    } catch { /* A broken analytics setting must never block a real lead. */ }
+  }
+  const { website: _honeypot, ...submitted } = withConsentOnlyAttribution({
+    ...parsed.data, attributionConsent: analyticsEnabled && parsed.data.attributionConsent,
+  })
   const data = {
     ...submitted,
     phone: normalizePhone(submitted.phone),

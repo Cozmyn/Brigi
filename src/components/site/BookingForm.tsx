@@ -13,7 +13,7 @@ export function BookingForm({
   locale = 'ro',
   initialPackage = 'unsure',
 }: {
-  content: Pick<SiteContent, 'booking' | 'packages' | 'events'>
+  content: Pick<SiteContent, 'booking' | 'packages' | 'events'> & Partial<Pick<SiteContent, 'analyticsEnabled'>>
   selectedPackageName?: string
   locale?: Locale
   initialPackage?: string
@@ -51,7 +51,7 @@ export function BookingForm({
     if (!idempotencyKey.current) idempotencyKey.current = crypto.randomUUID()
     const payload = {
       ...data,
-      ...getInquiryAttribution(),
+      ...getInquiryAttribution(c.analyticsEnabled === true),
       locale,
       inquiryMode: mode,
       datePrecision,

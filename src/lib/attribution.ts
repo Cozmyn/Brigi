@@ -66,12 +66,14 @@ export function captureAttribution() {
   if (!touch) return
   try {
     if (!read(firstKey)) sessionStorage.setItem(firstKey, JSON.stringify(touch))
-    const hasSource = Boolean(touch.referrer || campaigns.some(([, field]) => touch[field]))
-    if (!read(lastKey) || hasSource) sessionStorage.setItem(lastKey, JSON.stringify(touch))
+    const previous = read(lastKey)
+    const newCampaign = campaigns.some(([, field]) => Boolean(touch[field]))
+    const newReferrer = Boolean(touch.referrer && touch.referrer !== previous?.referrer)
+    if (!previous || newCampaign || newReferrer) sessionStorage.setItem(lastKey, JSON.stringify(touch))
   } catch { /* No silent pre-consent fallback. */ }
 }
-export function getInquiryAttribution() {
-  if (!consentGiven()) return { attributionConsent: false as const }
+export function getInquiryAttribution(enabled = true) {
+  if (!enabled || !consentGiven()) return { attributionConsent: false as const }
   captureAttribution()
   const first = read(firstKey), last = read(lastKey)
   return {
