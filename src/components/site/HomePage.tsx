@@ -1,13 +1,21 @@
 import Link from 'next/link'
 import { type Locale } from '@/lib/site'
 import { getSiteContent } from '@/lib/cms'
+import { getPublicVideos } from '@/lib/public-videos'
+import { getPublicArticles } from '@/lib/public-articles'
+import { getPublicEntities } from '@/lib/public-entities'
 import { ArtistVisual } from './ArtistVisual'
 import { BookingForm } from './BookingForm'
-import { MediaSection } from './MediaSection'
+import { VideoShowcase } from './VideoShowcase'
+import { HomepageResources } from './HomepageResources'
 import { Packages } from './Packages'
 import { TrackedLink } from './TrackedLink'
 export async function HomePage({ locale: _locale }: { locale?: Locale }) {
-  const c = await getSiteContent()
+  const [c, videos, guides, cases] = await Promise.all([
+    getSiteContent(), getPublicVideos('ro'), getPublicArticles('ro'), getPublicEntities('case-studies', 'ro'),
+  ])
+  const approvedVideos = c.visibility.media ? videos : []
+  const hasLiveVideo = approvedVideos.some((video) => video.recordingContext === 'live')
   return (
     <>
       <section className="hero">
@@ -27,19 +35,19 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
               {c.cta.availability}
               <span aria-hidden="true">↗</span>
             </TrackedLink>
-            {c.artist.phone ? (
-              <TrackedLink
-                event="click_phone"
-                className="text-link"
-                href={`tel:${c.artist.phone.replace(/[^+\d]/g, '')}`}
-              >
-                {c.cta.phone} ↗
-              </TrackedLink>
+            {approvedVideos.length > 0 ? (
+              <Link className="text-link" href="#live">
+                {hasLiveVideo ? 'Ascultă live' : 'Ascultă înregistrările'} <span aria-hidden="true">↓</span>
+              </Link>
             ) : (
-              <Link className="text-link" href="#pachete">
-                Vezi pachetele <span aria-hidden="true">↓</span>
+              <Link className="text-link" href="#repertoriu">
+                Descoperă repertoriul <span aria-hidden="true">↓</span>
               </Link>
             )}
+            {c.artist.phone && <TrackedLink event="click_phone" className="hero-phone"
+              href={`tel:${c.artist.phone.replace(/[^+\d]/g, '')}`}>
+              {c.cta.phone} ↗
+            </TrackedLink>}
           </div>
           <div className="hero-bottom">
             <span>Românesc & internațional</span>
@@ -57,17 +65,18 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           BRIGITTA / MUZICĂ LIVE
         </div>
       </section>
-      {c.visibility.credentials && (
+      {c.visibility.credentials && c.verifiedCredentials.length > 0 && (
         <div className="credibility-strip">
-          <span>Parcurs artistic</span>
+          <span>Parcurs artistic verificat</span>
           <ul>
-            {c.artist.credentials.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
+            {c.verifiedCredentials.map((item) => <li key={item.sourceURL}>
+              <a href={item.sourceURL} target="_blank" rel="noopener noreferrer">{item.label} ↗</a>
+            </li>)}
           </ul>
-          <Link href="/despre">Cunoaște-o pe Brigitta ↗</Link>
+          <Link href="/despre">Despre Brigitta ↗</Link>
         </div>
       )}
+      <VideoShowcase videos={approvedVideos} />
       <section className="section experience-section" id="experienta">
         <div className="experience-copy">
           <p className="eyebrow">01 / Experiența live</p>
@@ -126,7 +135,6 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           </ul>
         </div>
       </section>
-      {c.visibility.media && <MediaSection items={c.media} />}
       <Packages content={c} />
       <section className="section artist-section">
         <div className="artist-frame">
@@ -170,6 +178,7 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           ))}
         </section>
       )}
+      <HomepageResources guides={guides} cases={cases} />
       <section className="section faq-section" id="intrebari">
         <div>
           <p className="eyebrow">06 / Detalii care contează</p>
@@ -205,7 +214,7 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           )}
         </div>
         <BookingForm
-          content={{ booking: c.booking, packages: c.packages, events: c.events }}
+          content={{ booking: c.booking, packages: c.packages, events: c.events, analyticsEnabled: c.analyticsEnabled }}
           locale="ro"
         />
       </section>
