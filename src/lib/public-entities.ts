@@ -134,7 +134,7 @@ export async function entityReferences(entity: PublicEntity) {
     ids(data[key]).map((id) => byID(kind, id, entity.locale)))
   const serviceTasks = ids(data.relatedServices).map(async (id) => {
     const service = await contentStore.byID('services', id, { locale: entity.locale, overrideAccess: false, draft: false, depth: 0 })
-    return service && service._status === 'published' && service.visible === true && service.priceApproved === true && service.name.trim()
+    return service && service._status === 'published' && service.visible === true && service.priceApproved === true && service.commerciallyVerified === true && service.name.trim()
       ? { label: service.name, href: `${entity.locale === 'en' ? '/en/booking' : '/rezervare'}?selectie=${service.id}` } : null
   })
   const related = await Promise.all(relatedTasks)
