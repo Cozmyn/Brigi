@@ -6,7 +6,13 @@ import { contentPath } from '@/lib/content-paths'
 import { articleFromSnapshot, type ArticleLocale, type ArticleSnapshotRow } from '@/lib/public-articles'
 
 const managedBy = 'article-slug-v1'
-type AliasRow = { document_id: number; data: string | Data }
+type AliasRow = {
+  document_id: number
+  data: string | Data
+  collection: string
+  locale: 'ro' | 'en'
+  unique_key: string | null
+}
 type ArticleAlias = { from: string; to: string; code: '308'; active: true; managedBy: string; articleId: number; articleLocale: ArticleLocale }
 
 function record(value: unknown): Data | null {
