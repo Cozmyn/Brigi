@@ -24,6 +24,7 @@ export type PublicVideo = {
   uploadDate: string
   durationSeconds: number
   recordingContext: 'live' | 'studio' | 'rehearsal' | 'other'
+  eventType?: Videos['eventType']
   transcript?: string
   seo?: Videos['seo']
 }
@@ -75,6 +76,7 @@ export function approvedPublicVideo(value: Videos, locale: VideoLocale): PublicV
     uploadDate: value.publishedAt,
     durationSeconds: value.durationSeconds,
     recordingContext: context!,
+    ...(value.eventType ? { eventType: value.eventType } : {}),
     ...(value.transcript?.trim() ? { transcript: value.transcript.trim() } : {}),
     seo: value.seo,
   }
@@ -154,4 +156,15 @@ export function videoStructuredData(video: PublicVideo) {
       },
     ],
   }
+}
+
+/** A service page may show only a verified recording tagged for that real event type. */
+export function videoForService(videos: PublicVideo[], slug: string): PublicVideo | undefined {
+  const mapping: Record<string, NonNullable<PublicVideo['eventType']>> = {
+    'nunti-si-ceremonii': 'wedding',
+    'evenimente-corporate': 'corporate',
+    'evenimente-private': 'private',
+  }
+  const category = mapping[slug]
+  return category ? videos.find((video) => video.eventType === category) : undefined
 }
