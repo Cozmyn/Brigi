@@ -2,6 +2,8 @@ import { Bodoni_Moda, Manrope } from 'next/font/google'
 import { getSiteContent } from '@/lib/cms'
 import { siteURL } from '@/lib/site'
 import { Analytics } from '@/components/site/Analytics'
+import { AttributionCapture } from '@/components/site/AttributionCapture'
+import { EnglishResources } from '@/components/site/EntityPages'
 import '../(frontend)/globals.css'
 export const dynamic = 'force-dynamic'
 const serif = Bodoni_Moda({
@@ -19,7 +21,9 @@ export default async function EnglishLayout({ children }: { children: React.Reac
     <html lang="en" className={`${serif.variable} ${sans.variable}`}>
       <body>
         {children}
+        <EnglishResources />
         <Analytics enabled={c.analyticsEnabled} />
+        <AttributionCapture enabled={c.analyticsEnabled} />
       </body>
     </html>
   )
