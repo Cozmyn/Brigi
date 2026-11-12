@@ -76,6 +76,24 @@ test('MySQL publication keeps drafts private, validates slugs, isolates locales,
   await store.unpublish('pages', doc.id)
   assert.equal(await store.byID('pages', doc.id, { overrideAccess: false }), null)
 })
+test('historical seeded prices stay private until a fresh manual business verification', async () => {
+  const doc = await store.create({ collection: 'services', data: {
+    name: 'QA only / legacy seed not an approved commercial offer',
+    sets: '1x45', priceFromEUR: 999, currency: 'EUR',
+    _status: 'published', visible: true, priceApproved: true,
+    commerciallyVerified: false,
+  } })
+  ids.push(doc.id)
+  assert.equal(await store.byID('services', doc.id, { overrideAccess: false }), null)
+  await store.update({ collection: 'services', id: doc.id, data: {
+    commerciallyVerified: true, commercialVerificationNote: 'Verified in isolated CI fixture only',
+  } })
+  assert.equal((await store.byID('services', doc.id, { overrideAccess: false }))?.name,
+    'QA only / legacy seed not an approved commercial offer')
+  await store.update({ collection: 'services', id: doc.id, data: { commerciallyVerified: false } })
+  assert.equal(await store.byID('services', doc.id, { overrideAccess: false }), null)
+})
+
 test('private collections and approved media are protected', async () => {
   const media = await store.create({
     collection: 'media',
