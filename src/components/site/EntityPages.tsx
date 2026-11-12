@@ -6,8 +6,9 @@ import type { ArticleImage } from '@/lib/article-references'
 import { readApprovedArticleImage } from '@/lib/article-references'
 import { getPublicArticles } from '@/lib/public-articles'
 import { entityHubPath, entityLabels, entityMetadata, entityIsIndexable, entityNavigation, entityReferences, entityStructuredData,
-  getPublicEntities, getPublicEntity, type EntityKind, type EntityLocale } from '@/lib/public-entities'
+  getPublicEntities, getPublicEntity, type EntityKind, type EntityLocale, type PublicEntity } from '@/lib/public-entities'
 import { pageMetadata, jsonLD } from '@/lib/seo'
+import { verifiedHubPair, verifiedLanguagePair } from '@/lib/hreflang'
 function Figure({ image }: { image: ArticleImage }) {
   return <figure><Image src={image.src} alt={image.alt} width={image.width} height={image.height} unoptimized
     sizes="(max-width: 760px) 100vw, 900px" style={{ width: '100%', maxWidth: 900, height: 'auto' }} />
@@ -29,6 +30,9 @@ export async function EnglishResources() {
     {links.map((link) => <Link key={link.href} href={link.href} style={{ marginRight: 20 }}>{link.label}</Link>)}
   </nav></footer>
 }
+function localized(entity: PublicEntity) {
+  return { id: entity.document.id, locale: entity.locale, path: entity.path, seo: entity.document.seo }
+}
 async function requiredEntity(kind: EntityKind, locale: EntityLocale, slug: string) {
   const entity = await getPublicEntity(kind, slug, locale)
   if (!entity) notFound()
@@ -39,8 +43,12 @@ export function entityDetailRoute(kind: EntityKind, locale: EntityLocale) {
   return {
     generateMetadata: async ({ params }: DetailProps) => {
       const entity = await requiredEntity(kind, locale, (await params).slug)
-      const image = await readApprovedArticleImage(entity.document.seo?.image)
-      return entityMetadata(entity, image || undefined)
+      const [image, siblings] = await Promise.all([
+        readApprovedArticleImage(entity.document.seo?.image),
+        getPublicEntities(kind, locale === 'ro' ? 'en' : 'ro'),
+      ])
+      const match = siblings.find((other) => other.document.id === entity.document.id)
+      return entityMetadata(entity, image || undefined, verifiedLanguagePair(localized(entity), match ? localized(match) : null))
     },
     Page: async ({ params }: DetailProps) => {
       const entity = await requiredEntity(kind, locale, (await params).slug)
@@ -76,9 +84,14 @@ export function entityDetailRoute(kind: EntityKind, locale: EntityLocale) {
 export function entityHubRoute(kind: EntityKind, locale: EntityLocale) {
   return {
     generateMetadata: async () => {
-      const docs = await getPublicEntities(kind, locale)
+      const [docs, siblings] = await Promise.all([
+        getPublicEntities(kind, locale), getPublicEntities(kind, locale === 'ro' ? 'en' : 'ro'),
+      ])
+      const ro = locale === 'ro' ? docs : siblings
+      const en = locale === 'en' ? docs : siblings
+      const languages = verifiedHubPair(ro.map(localized), en.map(localized), entityHubPath(kind, 'ro'), entityHubPath(kind, 'en'))
       return pageMetadata(entityLabels[kind][locale], locale === 'en' ? 'Approved and published resources.' : 'Resurse aprobate și publicate.',
-        entityHubPath(kind, locale), undefined, { noindex: !docs.some((entity) => entityIsIndexable(entity)) })
+        entityHubPath(kind, locale), undefined, { noindex: !docs.some((entity) => entityIsIndexable(entity)), languages })
     },
     Page: async () => {
       const docs = await getPublicEntities(kind, locale)

@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import type { Metadata } from 'next'
+import type { LanguageAlternates } from './hreflang'
 import { databaseConfigured, getDB } from '@/cms/db'
 import { contentStore } from '@/cms/store'
 import { object, validateFields } from '@/cms/validation'
@@ -86,13 +87,13 @@ export function entityCanonical(entity: PublicEntity): string | null {
 export function entityIsIndexable(entity: PublicEntity, ready = isProductionReady) {
   return ready && !entity.document.seo?.noindex && entityCanonical(entity) === new URL(entity.path, siteURL).href
 }
-export function entityMetadata(entity: PublicEntity, image?: ArticleImage): Metadata {
+export function entityMetadata(entity: PublicEntity, image?: ArticleImage, languages?: LanguageAlternates): Metadata {
   const doc = entity.document
   const title = doc.seo?.title || doc.title
   const description = doc.seo?.description || doc.summary || ''
   const canonical = entityCanonical(entity) || new URL(entity.path, siteURL).href
   return { metadataBase: new URL(siteURL), title: { absolute: `${title} | Brigitta` }, description,
-    alternates: { canonical }, robots: { index: entityIsIndexable(entity), follow: true },
+    alternates: { canonical, ...(entityIsIndexable(entity) && languages ? { languages } : {}) }, robots: { index: entityIsIndexable(entity), follow: true },
     openGraph: { type: 'website', title: doc.seo?.ogTitle || title, description: doc.seo?.ogDescription || description,
       url: canonical, locale: entity.locale === 'en' ? 'en_GB' : 'ro_RO',
       images: image ? [{ url: image.src, alt: image.alt, width: image.width, height: image.height }] : [] },
