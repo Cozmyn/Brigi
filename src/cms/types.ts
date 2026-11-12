@@ -48,6 +48,8 @@ export interface Service {
   order?: number
   visible?: boolean
   priceApproved?: boolean
+  commerciallyVerified?: boolean
+  commercialVerificationNote?: string
   _status?: 'draft' | 'published'
 }
 export interface Videos {
