@@ -39,6 +39,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:int
+      - run: npm run test:ops
       - run: npm run db:migrate
       - run: npm run test:import
       - run: npm run test:db

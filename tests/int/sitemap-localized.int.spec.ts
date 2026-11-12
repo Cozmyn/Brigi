@@ -62,6 +62,15 @@ describe('production sitemap localization', () => {
     expect(find('/rezervare')?.alternates?.languages).toEqual({
       'ro-RO': 'https://example.test/rezervare', 'en-GB': 'https://example.test/en/booking',
     })
+    for (const suffix of ['', '/planner', '/comparator', '/estimator']) {
+      const ro = '/instrumente' + suffix
+      const en = '/en/instrumente' + suffix
+      expect(find(ro)?.alternates?.languages).toEqual({
+        'ro-RO': 'https://example.test' + ro,
+        'en-GB': 'https://example.test' + en,
+      })
+      expect(find(en)?.alternates?.languages).toEqual(find(ro)?.alternates?.languages)
+    }
   })
   it('omits unpaired translations and noindex/non-self canonical URLs', async () => {
     const { cms, articles, sitemap } = await load()
