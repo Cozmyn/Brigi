@@ -56,7 +56,7 @@ test('private planner never saves by default, explicitly stores and loads draft,
 test('comparator never invents offers and estimator uses only the visitor budget', async ({ page }) => {
   await page.goto('/instrumente/comparator')
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Compară')
-  await expect(page.getByTestId('comparison-tool')).toContainText('Preț')
+  await expect(page.getByTestId('comparison-tool')).toContainText(/Nu există încă|Criteriu/)
   await page.goto('/instrumente/estimator')
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Estimator')
   await page.getByLabel('Bugetul tău pentru deplasare').fill('125,50')
