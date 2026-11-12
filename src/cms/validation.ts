@@ -14,7 +14,13 @@ export function validateFields(fields: Field[], input: Data, prefix = ''): Data 
   const output: Data = {}
   for (const f of fields) {
     if (!f.name) {
-      Object.assign(output, validateFields(f.fields || [], input, prefix))
+      const validated = validateFields(f.fields || [], input, prefix)
+      if (f.validate) {
+        const result = f.validate(validated, {})
+        if (result !== true)
+          throw new CMSValidationError(typeof result === 'string' ? result : 'Grup de câmpuri invalid.')
+      }
+      Object.assign(output, validated)
       continue
     }
     const key = f.name

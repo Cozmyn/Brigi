@@ -4,6 +4,9 @@ vi.mock('@/lib/cms', () => ({
   getSiteContent: vi.fn(async () => ({ media: [] })),
   getHomeSEO: vi.fn(async () => undefined),
 }))
+vi.mock('@/lib/public-articles', () => ({ getPublicArticles: vi.fn(async () => []) }))
+vi.mock('@/lib/public-entities', () => ({ entityKinds: ['musical-formats', 'partners', 'case-studies'],
+  getPublicEntities: vi.fn(async () => []), entityCanonical: vi.fn(), entityHubPath: vi.fn(), entityIsIndexable: vi.fn() }))
 afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 async function loadIndexing(gate: string) {
   vi.resetModules()
@@ -28,8 +31,8 @@ describe('production indexing gate', () => {
     const entries = await sitemap()
     expect(entries.map((entry) => entry.url)).toContain('https://public-site.test/')
     expect(entries.every((entry) => entry.url.startsWith('https://public-site.test/'))).toBe(true)
-    expect(entries.map((entry) => entry.url)).toContain('https://public-site.test/rezervare')
-    expect(entries.map((entry) => entry.url)).toContain('https://public-site.test/en/booking')
+    expect(entries.some((entry) => entry.url.includes('/ghiduri'))).toBe(false)
+    expect(entries.some((entry) => /\/(formate|parteneri|studii-de-caz)/.test(entry.url))).toBe(false)
     expect(pageMetadata('Public', 'Description', '/').robots).toEqual({ index: true, follow: true })
     expect(pageMetadata('Private', 'Description', '/private', undefined, { noindex: true }).robots).toEqual({ index: false, follow: true })
   })
