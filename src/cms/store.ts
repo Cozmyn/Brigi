@@ -86,6 +86,7 @@ function publicWhere(collection: string): Where {
         _status: { equals: 'published' },
         visible: { equals: true },
         priceApproved: { equals: true },
+        commerciallyVerified: { equals: true },
       }
     case 'media':
     case 'videos':
