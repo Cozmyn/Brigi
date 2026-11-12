@@ -44,6 +44,7 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
           { _status: { equals: 'published' } },
           { visible: { equals: true } },
           { priceApproved: { equals: true } },
+          { commerciallyVerified: { equals: true } },
         ],
       },
     }),
