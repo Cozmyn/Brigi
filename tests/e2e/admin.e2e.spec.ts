@@ -54,6 +54,20 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   await page.goto('/admin')
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Site, public')
   await page.screenshot({ path: test.info().outputPath('admin-desktop.png'), fullPage: true })
+  // SEO guidance and article drafts must be usable by an owner without code edits.
+  await page.goto('/admin/seo')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('SEO, conținut')
+  await expect(page.getByRole('link', { name: /Articole și ghiduri/ })).toBeVisible()
+  await page.goto('/admin/collections/articles/create')
+  await page.getByLabel('Titlu *', { exact: true }).fill('Preț solistă pentru nuntă: ghid practic')
+  await page.getByLabel('Rezumat').fill('Ce influențează prețul unui recital live și ce verifici înainte de ofertă.')
+  await page.getByRole('button', { name: 'Completează slug și meta din textul existent' }).click()
+  await expect(page.getByLabel('Adresă pagină *')).toHaveValue('pret-solista-pentru-nunta-ghid-practic')
+  await expect(page.locator('#seo\\.title')).toHaveValue(/Brigitta/)
+  await expect(page.locator('#seo\\.description')).toContainText('recital live')
+  // Leave the draft unsaved: this is an editor usability test, not fake content.
+  await page.goto('/admin')
+
   const create = await request.post('/api/pages?locale=ro&draft=true', {
     headers,
     data: {
