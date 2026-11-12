@@ -36,6 +36,14 @@ export async function GET(request: Request) {
   const canReadLeads =
     user?.role === 'owner' ||
     Boolean(user && 'canAccessInquiries' in user && user.canAccessInquiries)
+  const queue = canReadLeads
+    ? await getDB()('inquiry_outbox').groupBy('status').select('status').count('* as count')
+    : []
+  const notifications = { pending: 0, processing: 0, failed: 0, delivered: 0 }
+  for (const row of queue) {
+    const status = String(row.status) as keyof typeof notifications
+    if (status in notifications) notifications[status] = Number(row.count)
+  }
   const inquiries = canReadLeads
     ? await cms.find({
         collection: 'inquiries',
@@ -43,7 +51,7 @@ export async function GET(request: Request) {
         overrideAccess: false,
         limit: 5,
         sort: '-createdAt',
-        select: { name: true, city: true, eventDate: true, status: true, createdAt: true },
+        select: { name: true, city: true, eventDate: true, eventMonth: true, status: true, createdAt: true },
       })
     : null
   return Response.json(
@@ -62,6 +70,7 @@ export async function GET(request: Request) {
       referrers: rank('referrer'),
       campaigns: rank('campaign'),
       recent: inquiries?.docs || [],
+      ...(canReadLeads ? { notifications } : {}),
     },
     { headers: { 'Cache-Control': 'private, no-store' } },
   )
