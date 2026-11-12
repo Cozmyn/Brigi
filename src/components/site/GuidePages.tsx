@@ -1,12 +1,22 @@
 import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { getSiteContent } from '@/lib/cms'
 import { getPublicArticle, getPublicArticles, type ArticleLocale } from '@/lib/public-articles'
+import { articleRedirectTarget } from '@/cms/article-redirects'
+import { articleRelatedServices } from '@/lib/article-services'
 import { readApprovedArticleImage, resolveArticleReferences, type ArticleImage } from '@/lib/article-references'
 import { articleIsIndexable, articleMetadata, articleStructuredData } from '@/lib/article-seo'
 import { jsonLD, pageMetadata } from '@/lib/seo'
+
+async function guideOrRedirect(locale: ArticleLocale, slug: string) {
+  const article = await getPublicArticle(locale, slug)
+  if (article) return article
+  const target = await articleRedirectTarget(locale, slug)
+  if (target) permanentRedirect(target)
+  notFound()
+}
 
 function ArticleFigure({ image }: { image: ArticleImage }) {
   return <figure style={{ margin: '24px 0' }}>
@@ -62,16 +72,14 @@ export async function GuideHubPage({ locale }: { locale: ArticleLocale }) {
 }
 
 export async function guideArticleMetadata(locale: ArticleLocale, slug: string) {
-  const article = await getPublicArticle(locale, slug)
-  if (!article) notFound()
+  const article = await guideOrRedirect(locale, slug)
   const image = await readApprovedArticleImage(article.seo?.image)
   return articleMetadata(article, await getSiteContent(locale), image || undefined)
 }
 
 export async function GuideArticlePage({ locale, slug }: { locale: ArticleLocale; slug: string }) {
-  const article = await getPublicArticle(locale, slug)
-  if (!article) notFound()
-  const references = await resolveArticleReferences(article)
+  const article = await guideOrRedirect(locale, slug)
+  const [references, services] = await Promise.all([resolveArticleReferences(article), articleRelatedServices(article)])
   const hub = locale === 'en' ? '/en/ghiduri' : '/ghiduri'
   const separateSocial = references.socialImage && !references.sectionImages.some((image) => image?.src === references.socialImage?.src)
   return <GuideShell locale={locale}><article className="inner-page">
@@ -95,6 +103,10 @@ export async function GuideArticlePage({ locale, slug }: { locale: ArticleLocale
       {!!references.relatedPages.length && <section className="editorial-section">
         <h2>{locale === 'en' ? 'Related reading' : 'Pagini asociate'}</h2>
         <ul>{references.relatedPages.map((page) => <li key={page.id}><Link href={page.path}>{page.title}</Link></li>)}</ul>
+      </section>}
+      {!!services.length && <section className="editorial-section">
+        <h2>{locale === 'en' ? 'Related packages' : 'Pachete asociate'}</h2>
+        <ul>{services.map((service) => <li key={service.id}><Link href={service.href}>{service.name}</Link></li>)}</ul>
       </section>}
       <section className="editorial-section"><h2>{locale === 'en' ? 'Sources' : 'Surse'}</h2><ul>
         {article.sources?.map((source, index) => <li key={index}><a href={source.url} rel="noreferrer">{source.label}</a></li>)}
