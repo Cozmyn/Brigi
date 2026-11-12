@@ -71,6 +71,7 @@ if (!(await cms.count({ collection: 'services' })).totalDocs) {
         order,
         visible: false,
         priceApproved: false,
+        commerciallyVerified: false,
         _status: 'draft',
       },
     })
