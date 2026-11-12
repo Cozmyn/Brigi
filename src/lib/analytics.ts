@@ -1,4 +1,14 @@
 import { z } from 'zod'
+
+const privateSegments = new Set(['admin', 'api', 'next'])
+
+/** Accept public slug paths only, never queries, fragments or external URLs. */
+export function isPublicAnalyticsPath(path: string): boolean {
+  if (!/^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*\/?)?$/.test(path))
+    return false
+  return !path.split('/').some((segment) => privateSegments.has(segment))
+}
+
 export const analyticsSchema = z.object({
   consent: z.literal(true),
   event: z.enum([
@@ -11,11 +21,7 @@ export const analyticsSchema = z.object({
     'package_selected',
     'media_played',
   ]),
-  path: z
-    .string()
-    .max(150)
-    .regex(/^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*)?$/)
-    .refine((x) => !['/admin', '/api', '/next'].includes(x)),
+  path: z.string().max(150).refine(isPublicAnalyticsPath, 'Invalid public analytics path.'),
   referrer: z
     .string()
     .max(100)

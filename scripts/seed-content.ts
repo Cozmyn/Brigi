@@ -1,7 +1,6 @@
 import 'dotenv/config'
 import { contentStore } from '../src/cms/store'
 import { siteContent as c } from '../src/lib/site'
-import { repairPublicText } from '../src/lib/positioning'
 import { editorialPages } from '../src/lib/editorial'
 
 /** Idempotent content import. Never replaces an existing page, package, or populated global. */
@@ -115,36 +114,5 @@ if (!home.heroTitle)
       },
     },
   })
-// Only fix obsolete positioning in explicitly public editorial fields. Keep IDs, URLs,
-// media references, private notes and lead records untouched.
-for (const collection of ['pages', 'services', 'faq', 'videos', 'media'] as const) {
-  const docs = await cms.find({
-    collection,
-    locale: 'ro',
-    depth: 0,
-    pagination: false,
-    overrideAccess: true,
-  })
-  for (const doc of docs.docs) {
-    const repaired = repairPublicText(doc) as typeof doc
-    if (JSON.stringify(repaired) !== JSON.stringify(doc)) {
-      await cms.update({
-        collection,
-        id: doc.id,
-        locale: 'ro',
-        data: { ...repaired },
-        overrideAccess: true,
-      })
-    }
-  }
-}
-for (const slug of ['home-settings', 'site-settings'] as const) {
-  const doc = await cms.findGlobal({ slug, locale: 'ro', depth: 0 })
-  const repaired = repairPublicText(doc) as typeof doc
-  if (JSON.stringify(repaired) !== JSON.stringify(doc))
-    await cms.updateGlobal({ slug, locale: 'ro', data: { ...repaired } })
-}
-console.log(
-  'Conținut inițializat; poziționarea vocală verificată. Restul datelor existente au fost păstrate.',
-)
+console.log('Conținut inițializat; textele editoriale existente nu au fost rescrise.')
 await cms.destroy()
