@@ -64,7 +64,7 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   await page.getByRole('button', { name: 'Completează slug și meta din textul existent' }).click()
   await expect(page.getByLabel('Adresă pagină *')).toHaveValue('pret-solista-pentru-nunta-ghid-practic')
   await expect(page.locator('#seo\\.title')).toHaveValue(/Brigitta/)
-  await expect(page.locator('#seo\\.description')).toContainText('recital live')
+  await expect(page.locator('#seo\\.description')).toHaveValue(/recital live/)
   // Leave the draft unsaved: this is an editor usability test, not fake content.
   await page.goto('/admin')
 
