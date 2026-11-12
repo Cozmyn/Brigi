@@ -12,6 +12,8 @@ export async function SiteHeader({ locale: _locale }: { locale?: Locale }) {
   ])
   const navigation = siteContent.navigation.filter((item) =>
     siteContent.packages.length > 0 || !/^\/?#pachete$/.test(item.href))
+  if (!navigation.some((item) => item.href.replace(/\/$/, '') === '/instrumente'))
+    navigation.push({ label: 'Instrumente', href: '/instrumente' })
   if (guides.length && !navigation.some((item) => item.href.replace(/\/$/, '') === '/ghiduri'))
     navigation.push({ label: 'Ghiduri', href: '/ghiduri' })
   const available = [

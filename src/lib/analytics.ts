@@ -20,6 +20,9 @@ export const analyticsSchema = z.object({
     'contact_form_submitted',
     'package_selected',
     'media_played',
+    'planner_exported',
+    'format_compared',
+    'budget_calculated',
   ]),
   path: z.string().max(150).refine(isPublicAnalyticsPath, 'Invalid public analytics path.'),
   referrer: z

@@ -36,6 +36,7 @@ export async function SiteFooter({ locale: _locale }: { locale?: Locale }) {
           <span>© {new Date().getFullYear()} Brigitta</span>
           <nav aria-label="Informații și pagini">
             <Link href="/despre">Despre</Link>
+            <Link href="/instrumente">Instrumente</Link>
             <Link href="/nunti-si-ceremonii">Nunți</Link>
             <Link href="/solista-botez">Botezuri</Link>
             <Link href="/evenimente-corporate">Corporate</Link>

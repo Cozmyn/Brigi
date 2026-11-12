@@ -126,6 +126,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...(languages ? { alternates: { languages } } : {}),
     })
   }
+  const toolSuffixes = ['', '/planner', '/comparator', '/estimator']
+  const toolEntries: MetadataRoute.Sitemap = toolSuffixes.flatMap((suffix) => {
+    const ro = '/instrumente' + suffix
+    const en = '/en/instrumente' + suffix
+    const languages = verifiedStaticPair(ro, en)
+    return [
+      { url: new URL(ro, siteURL).href, ...(languages ? { alternates: { languages } } : {}) },
+      { url: new URL(en, siteURL).href, ...(languages ? { alternates: { languages } } : {}) },
+    ]
+  })
   const publicRo = pages.filter((page) => publicPage(page, 'ro', Boolean(c.media.length)))
   const publicEn = english.filter((page) => publicPage(page, 'en', Boolean(c.media.length)))
   const homeLanguages = verifiedStaticPair('/', '/en', home, englishHome)
@@ -144,6 +154,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...guides,
     ...entities,
     ...videoEntries,
+    ...toolEntries,
   ]
   const seen = new Set<string>()
   return entries.filter((entry) => {
