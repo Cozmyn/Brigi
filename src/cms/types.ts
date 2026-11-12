@@ -238,6 +238,7 @@ export interface HomeSettings {
   showreelVisible?: boolean
   testimonialsVisible?: boolean
   trustStripVisible?: boolean
+  verifiedCredentials?: { label: string; sourceURL: string }[]
   sectionOrder?: (
     'events' | 'packages' | 'benefits' | 'process' | 'repertoire' | 'about' | 'faq' | 'finalCta'
   )[]
