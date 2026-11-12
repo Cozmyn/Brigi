@@ -110,7 +110,7 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   expect(essential).toBeTruthy()
   await request.patch(`/api/services/${essential.id}?locale=ro`, {
     headers,
-    data: { ...essential, priceFromEUR: 499, visible: true, priceApproved: true, _status: 'published' },
+    data: { ...essential, priceFromEUR: 499, visible: true, priceApproved: true, commerciallyVerified: true, _status: 'published' },
   })
   await page.goto('/')
   await expect(page.locator('.package-price').first()).toContainText('499')
