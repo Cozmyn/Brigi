@@ -30,7 +30,8 @@ test('article publication, draft isolation, redirects, conflict rollback and wit
   try {
     const service = await contentStore.create({ collection: 'services', overrideAccess: true, locale: 'ro', data: {
       name: `QA package ${suffix}`, sets: '1x45', priceFromEUR: 1, currency: 'EUR',
-      _status: 'published', visible: true, priceApproved: true, description: 'Temporary CI package.',
+      _status: 'published', visible: true, priceApproved: true, commerciallyVerified: true,
+      description: 'Temporary CI package.',
     } })
     serviceID = service.id
     const created = await contentStore.create({ collection: 'articles', locale: 'ro', overrideAccess: true,
