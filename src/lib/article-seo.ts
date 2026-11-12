@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import type { PublicArticle } from './public-articles'
+import type { ArticleImage } from './article-references'
 import { isProductionReady, siteURL, siteContent, type SiteContent } from './site'
 import { pageMetadata } from './seo'
 
@@ -16,7 +17,7 @@ export function articleIsIndexable(article: PublicArticle, ready = isProductionR
     articleCanonical(article) === new URL(article.path, siteURL).href
 }
 
-export function articleMetadata(article: PublicArticle, c: SiteContent = siteContent): Metadata {
+export function articleMetadata(article: PublicArticle, c: SiteContent = siteContent, image?: ArticleImage): Metadata {
   const canonical = articleCanonical(article) || new URL(article.path, siteURL).href
   const metadata = pageMetadata(article.title, article.summary || '', article.path, c, {
     title: article.seo?.title, description: article.seo?.description, canonical,
@@ -25,10 +26,13 @@ export function articleMetadata(article: PublicArticle, c: SiteContent = siteCon
   return { ...metadata, openGraph: {
     ...metadata.openGraph, type: 'article', publishedTime: article.publishedAt,
     modifiedTime: article.reviewedAt, authors: article.author ? [article.author] : [],
+    ...(image ? { images: [{ url: image.src, alt: image.alt, width: image.width, height: image.height }] } : {}),
+  }, twitter: {
+    ...metadata.twitter, card: 'summary_large_image', ...(image ? { images: [image.src] } : {}),
   } }
 }
 
-export function articleStructuredData(article: PublicArticle) {
+export function articleStructuredData(article: PublicArticle, image?: ArticleImage) {
   const url = new URL(article.path, siteURL).href
   const hub = new URL(article.locale === 'en' ? '/en/ghiduri' : '/ghiduri', siteURL).href
   const home = new URL(article.locale === 'en' ? '/en' : '/', siteURL).href
@@ -40,6 +44,8 @@ export function articleStructuredData(article: PublicArticle) {
       datePublished: article.publishedAt, dateModified: article.reviewedAt,
       citation: article.sources?.map((source) => source.url),
       articleBody: article.sections?.map((section) => `${section.heading}\n${section.body}`).join('\n\n'),
+      ...(image ? { image: { '@type': 'ImageObject', url: new URL(image.src, siteURL).href,
+        width: image.width, height: image.height, caption: image.caption || image.alt } } : {}),
     },
     { '@type': 'BreadcrumbList', itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Brigitta', item: home },

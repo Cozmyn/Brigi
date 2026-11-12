@@ -1,10 +1,21 @@
 import type { ReactNode } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSiteContent } from '@/lib/cms'
 import { getPublicArticle, getPublicArticles, type ArticleLocale } from '@/lib/public-articles'
+import { readApprovedArticleImage, resolveArticleReferences, type ArticleImage } from '@/lib/article-references'
 import { articleIsIndexable, articleMetadata, articleStructuredData } from '@/lib/article-seo'
 import { jsonLD, pageMetadata } from '@/lib/seo'
+
+function ArticleFigure({ image }: { image: ArticleImage }) {
+  return <figure style={{ margin: '24px 0' }}>
+    <Image src={image.src} alt={image.alt} width={image.width} height={image.height}
+      unoptimized sizes="(max-width: 760px) 100vw, 900px"
+      style={{ width: '100%', maxWidth: 900, height: 'auto' }} />
+    {(image.caption || image.credit) && <figcaption>{image.caption}{image.caption && image.credit ? ' · ' : ''}{image.credit}</figcaption>}
+  </figure>
+}
 
 function GuideShell({ locale, children }: { locale: ArticleLocale; children: ReactNode }) {
   const home = locale === 'en' ? '/en' : '/'
@@ -53,13 +64,16 @@ export async function GuideHubPage({ locale }: { locale: ArticleLocale }) {
 export async function guideArticleMetadata(locale: ArticleLocale, slug: string) {
   const article = await getPublicArticle(locale, slug)
   if (!article) notFound()
-  return articleMetadata(article, await getSiteContent(locale))
+  const image = await readApprovedArticleImage(article.seo?.image)
+  return articleMetadata(article, await getSiteContent(locale), image || undefined)
 }
 
 export async function GuideArticlePage({ locale, slug }: { locale: ArticleLocale; slug: string }) {
   const article = await getPublicArticle(locale, slug)
   if (!article) notFound()
+  const references = await resolveArticleReferences(article)
   const hub = locale === 'en' ? '/en/ghiduri' : '/ghiduri'
+  const separateSocial = references.socialImage && !references.sectionImages.some((image) => image?.src === references.socialImage?.src)
   return <GuideShell locale={locale}><article className="inner-page">
     <header className="inner-hero">
       <nav className="breadcrumbs" aria-label={locale === 'en' ? 'Breadcrumb' : 'Fir de navigare'}>
@@ -70,11 +84,18 @@ export async function GuideArticlePage({ locale, slug }: { locale: ArticleLocale
       <p>{locale === 'en' ? 'Author' : 'Autor'}: {article.author}. {locale === 'en' ? 'Reviewed by' : 'Revizuit de'}: {article.reviewer}.</p>
       <p>{locale === 'en' ? 'Published' : 'Publicat'}: <time dateTime={article.publishedAt}>{article.publishedAt?.slice(0, 10)}</time>{' · '}
         {locale === 'en' ? 'Reviewed' : 'Revizuit'}: <time dateTime={article.reviewedAt}>{article.reviewedAt?.slice(0, 10)}</time></p>
+      {separateSocial && references.socialImage && <ArticleFigure image={references.socialImage} />}
     </header>
     <div className="section editorial-body">
       {article.sections?.map((section, index) => <section className="editorial-section" key={index}>
-        <h2>{section.heading}</h2>{section.body.split(/\n\s*\n/).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+        <h2>{section.heading}</h2>
+        {references.sectionImages[index] && <ArticleFigure image={references.sectionImages[index]} />}
+        {section.body.split(/\n\s*\n/).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
       </section>)}
+      {!!references.relatedPages.length && <section className="editorial-section">
+        <h2>{locale === 'en' ? 'Related reading' : 'Pagini asociate'}</h2>
+        <ul>{references.relatedPages.map((page) => <li key={page.id}><Link href={page.path}>{page.title}</Link></li>)}</ul>
+      </section>}
       <section className="editorial-section"><h2>{locale === 'en' ? 'Sources' : 'Surse'}</h2><ul>
         {article.sources?.map((source, index) => <li key={index}><a href={source.url} rel="noreferrer">{source.label}</a></li>)}
       </ul></section>
@@ -82,6 +103,6 @@ export async function GuideArticlePage({ locale, slug }: { locale: ArticleLocale
         {locale === 'en' ? 'Discuss music for your event' : 'Discută despre muzica evenimentului tău'}
       </Link>
     </div>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLD(articleStructuredData(article)) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLD(articleStructuredData(article, references.socialImage || undefined)) }} />
   </article></GuideShell>
 }
