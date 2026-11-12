@@ -64,6 +64,7 @@ export function structuredData(
   includeFAQ: boolean | SiteContent['faqs'] = false,
   c: SiteContent = siteContent,
   includeOffers = true,
+  includeService = true,
 ) {
   const personID = `${siteURL}/#brigitta`
   const siteID = `${siteURL}/#website`
@@ -132,6 +133,11 @@ export function structuredData(
         : {}),
     },
   ]
+  // Content-only/legal pages should not claim a performance service as their main entity.
+  if (!includeService) {
+    const serviceIndex = graph.findIndex((node) => node['@type'] === 'Service')
+    if (serviceIndex >= 0) graph.splice(serviceIndex, 1)
+  }
   if (includeFAQ && (Array.isArray(includeFAQ) ? includeFAQ.length : c.faqs.length))
     graph.push({
       '@type': 'FAQPage',

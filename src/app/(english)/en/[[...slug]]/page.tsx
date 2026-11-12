@@ -65,6 +65,7 @@ export default async function EnglishPage({ params, searchParams }: Props) {
     page?.faqs || false,
     c,
     Boolean(page?.showPackages) || !slug,
+    !slug || slug === 'booking' || page?.type === 'service' || Boolean(page?.showPackages),
   )
   for (const entity of graph['@graph'])
     if (entity['@type'] === 'WebPage') entity.inLanguage = 'en-GB'

@@ -138,7 +138,11 @@ export default async function RomanianPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLD(
-            structuredData(`/${slug}`, title, page?.faqs || false, c, Boolean(page?.showPackages)),
+            structuredData(
+              `/${slug}`, title, page?.faqs || false, c,
+              Boolean(page?.showPackages),
+              slug === 'rezervare' || page?.type === 'service' || Boolean(page?.showPackages),
+            ),
           ),
         }}
       />
