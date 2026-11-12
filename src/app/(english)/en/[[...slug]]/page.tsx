@@ -78,9 +78,18 @@ export default async function EnglishPage({ params, searchParams }: Props) {
         </Link>
         <nav className="desktop-nav" aria-label="Main navigation">
           <Link href="/en">Home</Link>
-          <Link href="/en#pachete">Packages</Link>
+          {!!c.packages.length && <Link href="/en#pachete">Packages</Link>}
           <Link href="/">Română</Link>
         </nav>
+        <details className="mobile-menu">
+          <summary aria-label="Open navigation"><span /><span /><span className="sr-only">Menu</span></summary>
+          <nav aria-label="Mobile navigation">
+            <Link href="/en">Home</Link>
+            {!!c.packages.length && <Link href="/en#pachete">Packages</Link>}
+            <Link href="/en/booking">Check availability</Link>
+            <Link href="/">Română</Link>
+          </nav>
+        </details>
         <Link className="header-cta" href="/en/booking">
           Check availability ↗
         </Link>

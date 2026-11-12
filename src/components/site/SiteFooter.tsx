@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { PrivacyPreferences } from './Analytics'
 import { getSiteContent } from '@/lib/cms'
+import { getPublicVideos } from '@/lib/public-videos'
 import { isPublicURL, type Locale } from '@/lib/site'
 import { TrackedLink } from './TrackedLink'
 export async function SiteFooter({ locale: _locale }: { locale?: Locale }) {
-  const siteContent = await getSiteContent()
+  const [siteContent, videos] = await Promise.all([getSiteContent(), getPublicVideos('ro')])
   const { artist, cta } = siteContent
   return (
     <>
@@ -39,6 +40,7 @@ export async function SiteFooter({ locale: _locale }: { locale?: Locale }) {
             <Link href="/solista-botez">Botezuri</Link>
             <Link href="/evenimente-corporate">Corporate</Link>
             <Link href="/muzica-live-evenimente">Ghid muzică live</Link>
+            {!!videos.length && <Link href="/video">Video</Link>}
             <Link href="/confidentialitate">Confidențialitate</Link>
             <Link href="/cookies">Cookies</Link>
             {siteContent.analyticsEnabled && <PrivacyPreferences />}

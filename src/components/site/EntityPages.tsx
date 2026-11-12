@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import type { ArticleImage } from '@/lib/article-references'
 import { readApprovedArticleImage } from '@/lib/article-references'
 import { getPublicArticles } from '@/lib/public-articles'
+import { getPublicVideos } from '@/lib/public-videos'
 import { entityHubPath, entityLabels, entityMetadata, entityIsIndexable, entityNavigation, entityReferences, entityStructuredData,
   getPublicEntities, getPublicEntity, type EntityKind, type EntityLocale, type PublicEntity } from '@/lib/public-entities'
 import { pageMetadata, jsonLD } from '@/lib/seo'
@@ -23,8 +24,11 @@ async function Shell({ locale, children }: { locale: EntityLocale; children: Rea
     </nav></footer></>
 }
 export async function EnglishResources() {
-  const [links, guides] = await Promise.all([entityNavigation('en'), getPublicArticles('en')])
+  const [links, guides, videos] = await Promise.all([
+    entityNavigation('en'), getPublicArticles('en'), getPublicVideos('en'),
+  ])
   if (guides.length) links.push({ label: 'Guides', href: '/en/ghiduri' })
+  if (videos.length) links.push({ label: 'Recordings', href: '/en/video' })
   if (!links.length) return null
   return <footer className="section"><nav aria-label="Explore resources">
     {links.map((link) => <Link key={link.href} href={link.href} style={{ marginRight: 20 }}>{link.label}</Link>)}
