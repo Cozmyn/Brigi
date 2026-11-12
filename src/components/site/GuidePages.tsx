@@ -56,8 +56,8 @@ export async function guideHubMetadata(locale: ArticleLocale) {
   const ro = locale === 'ro' ? articles : siblingArticles
   const en = locale === 'en' ? articles : siblingArticles
   const languages = verifiedHubPair(ro, en, '/ghiduri', '/en/ghiduri')
-  return pageMetadata(locale === 'en' ? 'Music and event guides' : 'Ghiduri despre muzică și evenimente',
-    locale === 'en' ? 'Published guides for planning the music of your event.' : 'Ghiduri publicate pentru planificarea muzicii evenimentului.',
+  return pageMetadata(locale === 'en' ? 'Music and event guides: vocalist, DJ and planning' : 'Ghiduri muzică nuntă: solistă, DJ, buget și organizare',
+    locale === 'en' ? 'Practical guides to live vocals, wedding music and event planning, with sources and next steps.' : 'Ghiduri despre solistă la nuntă, prețuri, program muzical, botez și corporate. Checklist, surse și sfaturi pentru ofertă.',
     locale === 'en' ? '/en/ghiduri' : '/ghiduri', await getSiteContent(locale),
     { noindex: !articles.some((article) => articleIsIndexable(article)), languages })
 }
@@ -66,8 +66,13 @@ export async function GuideHubPage({ locale }: { locale: ArticleLocale }) {
   const articles = await getPublicArticles(locale)
   return <GuideShell locale={locale}><section className="inner-hero">
     <p className="eyebrow">Brigitta / {locale === 'en' ? 'Guides' : 'Ghiduri'}</p>
-    <h1>{locale === 'en' ? 'Music and event guides' : 'Ghiduri despre muzică și evenimente'}</h1>
-    <p>{locale === 'en' ? 'Ideas and practical guidance for planning your event’s music.' : 'Idei și informații practice pentru planificarea muzicii evenimentului.'}</p>
+    <h1>{locale === 'en' ? 'Music and event planning guides' : 'Ghiduri muzică pentru nuntă și evenimente'}</h1>
+    <p>{locale === 'en'
+      ? 'Compare live singers, DJs and bands, plan the evening and learn which details shape a personal quote.'
+      : 'Compară solista vocală cu DJ-ul sau formația, pregătește cronologia și înțelege ce influențează o ofertă pentru muzică live.'}</p>
+    <Link href={locale === 'en' ? '/en/booking' : '/rezervare'} className="text-link">
+      {locale === 'en' ? 'Ask about your event' : 'Verifică disponibilitatea pentru eveniment'} ↗
+    </Link>
   </section><section className="section editorial-body">
     {!articles.length && <p>{locale === 'en' ? 'No approved guides have been published yet.' : 'Nu există încă ghiduri aprobate și publicate.'}</p>}
     {articles.map((article) => <article className="editorial-section" key={article.id}>
@@ -100,7 +105,10 @@ export async function GuideArticlePage({ locale, slug }: { locale: ArticleLocale
         <Link href={hub}>{locale === 'en' ? 'Guides' : 'Ghiduri'}</Link><span>/</span><span>{article.title}</span>
       </nav>
       <h1>{article.title}</h1><p className="intro">{article.summary}</p>
-      <p>{locale === 'en' ? 'Author' : 'Autor'}: {article.author}. {locale === 'en' ? 'Reviewed by' : 'Revizuit de'}: {article.reviewer}.</p>
+      <p>{locale === 'en' ? 'Publisher' : 'Publicat de'}: {article.author}.{' '}
+        {article.reviewer?.includes('AI')
+          ? (locale === 'en' ? 'Editorial note' : 'Notă editorială')
+          : (locale === 'en' ? 'Reviewed by' : 'Revizuit de')}: {article.reviewer}.</p>
       <p>{locale === 'en' ? 'Published' : 'Publicat'}: <time dateTime={article.publishedAt}>{article.publishedAt?.slice(0, 10)}</time>{' · '}
         {locale === 'en' ? 'Reviewed' : 'Revizuit'}: <time dateTime={article.reviewedAt}>{article.reviewedAt?.slice(0, 10)}</time></p>
       {separateSocial && references.socialImage && <ArticleFigure image={references.socialImage} />}

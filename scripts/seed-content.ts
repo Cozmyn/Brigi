@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { contentStore } from '../src/cms/store'
 import { siteContent as c } from '../src/lib/site'
 import { editorialPages } from '../src/lib/editorial'
+import { evergreenGuides } from '../src/lib/evergreen-guides'
 
 /** Idempotent content import. Never replaces an existing page, package, or populated global. */
 const cms = contentStore
@@ -51,6 +52,40 @@ for (const page of editorialPages) {
       data: { relatedPages: related.docs.map((x) => x.id) },
     })
   }
+}
+// Publish evergreen, reference-backed informational guides as a one-time editorial
+// bootstrap. Existing drafts and published articles are never replaced by a
+// seed re-run. BRIGITTA remains responsible for verifying personal claims
+// before any additional biography, testimonial, event proof or pricing.
+for (const guide of evergreenGuides) {
+  const existing = await cms.count({
+    collection: 'articles', locale: 'ro',
+    where: { slug: { equals: guide.slug } },
+  })
+  if (existing.totalDocs) continue
+  const related = await cms.find({
+    collection: 'pages', locale: 'ro',
+    where: { slug: { in: guide.relatedPageSlugs } },
+    limit: 30,
+  })
+  const now = new Date().toISOString()
+  await cms.create({
+    collection: 'articles', locale: 'ro',
+    data: {
+      title: guide.title, slug: guide.slug, summary: guide.summary,
+      topic: guide.topic, intent: guide.intent,
+      author: 'BRIGITTA',
+      // Accurate automated editorial disclosure, not a fictional human expert.
+      reviewer: 'Redactare și verificare asistată AI; fără recenzie artistică personală',
+      originalContribution: guide.originalContribution,
+      sections: guide.sections, sources: guide.sources,
+      relatedPages: related.docs.map((page) => page.id),
+      publishedAt: now, reviewedAt: now,
+      editorialStatus: 'approved', visible: true, approvedForPublication: true,
+      _status: 'published',
+      seo: { title: guide.seoTitle, description: guide.seoDescription, noindex: false },
+    },
+  })
 }
 if (!(await cms.count({ collection: 'services' })).totalDocs) {
   for (const [order, p] of c.packages.entries())
