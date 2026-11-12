@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import { getDB, closeDB } from './db'
 import { collections, globals } from './schema'
 import { authenticate, canManage, type User } from './auth'
+import { syncArticleRedirects } from './article-redirects'
 import {
   defaults,
   validateFields,
@@ -319,6 +320,8 @@ export class ContentStore {
             )
             .delete()
       }
+      if (opts.collection === 'articles' && data._status === 'published')
+        await syncArticleRedirects(trx, id!, locale, old?.published_data, data)
       if (opts.collection === 'pages' && data._status === 'published' && old?.published_data) {
         const previous = parse(old.published_data)
         if (previous.slug && previous.slug !== data.slug) {
@@ -367,7 +370,7 @@ export class ContentStore {
       await trx('cms_audit').insert({
         actor: opts.user?.username || 'system',
         action: 'delete',
-        entity: `${collection}:${id}`,
+        entity: `${collection}:${id}` ,
       })
     })
   }

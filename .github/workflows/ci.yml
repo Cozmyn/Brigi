@@ -5,9 +5,10 @@ on:
     branches: [main]
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
         database: ['mariadb:10.11', 'mysql:8.0']
     services:
@@ -57,3 +58,52 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  report-ci:
+    name: Report CI stages
+    needs: verify
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+      - name: Publish stage outcomes without raw logs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              filter: 'latest',
+              per_page: 100,
+            });
+            const verifyJobs = jobs.filter(job => job.name.startsWith('verify ('));
+            if (!verifyJobs.length) throw new Error('No verification jobs found for this run.');
+            const lines = [
+              '## CI stage report',
+              'Run: ' + context.runId,
+              'Head commit: ' + context.payload.pull_request.head.sha,
+              'Only job and step outcomes are included; no raw logs or environment values.',
+              '',
+            ];
+            for (const job of verifyJobs) {
+              lines.push('### ' + job.name + ': ' + (job.conclusion || job.status));
+              const failed = (job.steps || []).filter(step =>
+                ['failure', 'cancelled', 'timed_out', 'action_required'].includes(step.conclusion)
+              );
+              if (failed.length) {
+                for (const step of failed) lines.push('- Step ' + step.number + ': ' + step.name + ' — ' + step.conclusion);
+              } else {
+                lines.push('- No failed step reported by the Jobs API.');
+              }
+              lines.push('- Details: ' + job.html_url, '');
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: lines.join('\n'),
+            });

@@ -1,0 +1,37 @@
+{
+  "repository": "google/fonts",
+  "revision": "c30b221beb0c1da59d563feb91ec8656a1fa972a",
+  "romanianGlyphsVerified": "ĂăÂâÎîȘșȚț",
+  "files": [
+    {
+      "source": "ofl/bodonimoda/BodoniModa[opsz,wght].ttf",
+      "filename": "BodoniModa-normal.ttf",
+      "gitBlob": "c5d582f8003ae692761dd8e9ce69de23cb9fea53",
+      "sha256": "550f5e34ee0a828d7941b1fe9bc58b34e5260d3f33a61532e6d0a0114e79a5cf"
+    },
+    {
+      "source": "ofl/bodonimoda/BodoniModa-Italic[opsz,wght].ttf",
+      "filename": "BodoniModa-italic.ttf",
+      "gitBlob": "174375b9265ac430071f6f1f20de8dbe088c61c1",
+      "sha256": "dfff1619f8f6871c6372f8855b67211f9a73b4e93d45aca868cd8f46a48622de"
+    },
+    {
+      "source": "ofl/manrope/Manrope[wght].ttf",
+      "filename": "Manrope.ttf",
+      "gitBlob": "75274da58537d6123b14f2cd0c355ad4681fc2b3",
+      "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+    },
+    {
+      "source": "ofl/bodonimoda/OFL.txt",
+      "filename": "BodoniModa-OFL.txt",
+      "gitBlob": "973cec73f0874f3b7821a44ff43e4a4c88e44844",
+      "sha256": "931dfe2e0cd3c9443295f5c1d754b8a8403bf060df50c1d5900267ade83d0046"
+    },
+    {
+      "source": "ofl/manrope/OFL.txt",
+      "filename": "Manrope-OFL.txt",
+      "gitBlob": "e271172a9ed0cddc895aabb6509f1c7d880b492d",
+      "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+    }
+  ]
+}
