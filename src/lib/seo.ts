@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { isSelfCanonical, type LanguageAlternates } from './hreflang'
 import { isProductionReady, isPublicURL, siteContent, type SiteContent, siteURL } from './site'
 export type SEOOverrides = {
   title?: string | null
@@ -8,6 +9,8 @@ export type SEOOverrides = {
   ogTitle?: string | null
   ogDescription?: string | null
   image?: { src: string; alt: string }
+  /** Generated only for actual published/approved RO and EN counterparts. */
+  languages?: LanguageAlternates
 }
 export function pageMetadata(
   title: string,
@@ -19,6 +22,8 @@ export function pageMetadata(
   title = seo?.title || title
   description = seo?.description || description
   const canonical = seo?.canonical || path
+  // Cross-domain, invalid or non-self canonicals must not leak indexable URLs.
+  const indexable = isProductionReady && isSelfCanonical(path, seo)
   const social = seo?.image || c.photos.social
   const images = social.src
     ? [{ url: social.src, alt: social.alt, width: 1200, height: 630 }]
@@ -34,8 +39,8 @@ export function pageMetadata(
     metadataBase: new URL(siteURL),
     title: { absolute: title.includes('Brigitta') ? title : `${title} | Brigitta` },
     description,
-    alternates: { canonical },
-    robots: { index: isProductionReady && !seo?.noindex, follow: true },
+    alternates: { canonical, ...(indexable && seo?.languages ? { languages: seo.languages } : {}) },
+    robots: { index: indexable, follow: true },
     openGraph: {
       title: seo?.ogTitle || title,
       description: seo?.ogDescription || description,
