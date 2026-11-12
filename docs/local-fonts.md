@@ -1,21 +1,18 @@
-# Fonturi locale: Bodoni Moda și Manrope
+# Fonturi locale RO / EN
 
-## Implementare
+Bodoni Moda normal/italic și Manrope sunt livrate din `src/assets/fonts`, împreună cu licențele OFL originale și manifestul sursei. Fișierele au fost importate din google/fonts la commitul c30b221beb0c1da59d563feb91ec8656a1fa972a, verificate prin Git blob SHA și SHA-256. Importul verifică și prezența caracterelor ĂăÂâÎîȘșȚț în tabelele cmap ale tuturor celor trei fonturi.
 
-Fonturile originale și licențele OFL sunt păstrate în `src/assets/fonts`. Sursa exactă, hash-urile și verificarea diacriticelor sunt în `sources.json`. Modulul `src/lib/fonts.ts` folosește `next/font/local` și este importat de layout-urile RO și EN. Nu există descărcare de la Google Fonts în build-ul obișnuit pentru aceste fonturi.
+`src/lib/fonts.ts` folosește exclusiv `next/font/local`. Ambele layout-uri publice importă acest modul. Variabilele `--font-serif` și `--font-sans`, display swap și CSS-ul aplicației sunt păstrate. Bodoni Moda are greutăți 400–500, normal și italic; Manrope păstrează intervalul variabil 200–800, normal. Fișierele upstream sunt nemodificate, fără subset sau conversie.
 
-Bodoni Moda: normal și italic, greutăți 400–500. Manrope: variabil, 200–800, normal. Variabilele `--font-serif` și `--font-sans`, precum și `display: swap`, sunt păstrate. Fișierele TTF integrale includ caracterele românești; nu sunt subsetate sau modificate. CSS-ul existent nu este rescris. Licențele fonturilor rămân OFL, separat de licența codului.
+## Build fără Google Fonts
+
+Build-ul obișnuit folosește fișierele din repository. Nu execută `scripts/vendor-local-fonts.mjs`, nu depinde de un răspuns Google Fonts și nu descarcă fonturi la npm install. Workflow-ul de import este separat, limitat la branch-ul de lucru și declanșat numai la modificarea scriptului ori a propriului workflow. Acesta nu trebuie activat ca pas de prebuild.
 
 ## Verificări
 
-Importul inițial verifică hash-urile și maparea caracterelor ĂăÂâÎîȘșȚț în toate cele trei fonturi. Testele de integrare verifică aceiași octeți, licențele și folosirea modulului comun. Testele Playwright încarcă RO/EN la 360 și 1440 px, cer explicit greutățile/stilurile utilizate, verifică fonturile încărcate și lipsa solicitărilor către Google Fonts și salvează capturi de probe și homepage.
+- `npm run lint`, `npm run typecheck`, `npm run test:int`, `npm run build`, `npm run test:e2e`, pe un mediu de test configurat conform README.
+- Testele de integrare verifică integritatea fișierelor/licențelor, manifestul și utilizarea modulului comun în layout-uri.
+- Testele Playwright deschid / și /en la 390 și 1440 px, blochează Google Fonts, verifică încărcarea fețelor locale pentru greutăți/stiluri și atașează capturi cu diacritice și homepage.
+- Capturile sunt dovezi pentru inspecție, nu un test de regresie pixel-perfect: nu există încă baseline-uri aprobate. Verificarea existenței glifelor nu certifică singură aspectul lor vizual.
 
-Rulați `npm run lint`, `npm run typecheck`, `npm run test:int`, `npm run build` și `npm run test:e2e` pe mediul de test. Build-ul și testele browser nu sunt considerate trecute până la confirmarea CI. Capturile sunt probe pentru revizuire, nu comparații automate cu un baseline vizual aprobat. Verificarea manuală urmărește ruperile de rând, greutățile 400/500, italic, butoanele și diacriticele, inclusiv cu încărcare lentă.
-
-## Import și mentenanță
-
-`vendor-local-fonts.yml` și scriptul aferent sunt instrumente de import, nu pași din build. Workflow-ul este limitat la branch-ul de remediere și la schimbările explicite ale scriptului/workflow-ului. Nu actualizați automat sursa `google/fonts`: orice schimbare cere revizie fixată, hash-uri noi și reverificarea fonturilor/licențelor.
-
-După verificarea migrării, se poate elimina workflow-ul temporar printr-un commit separat. Nu rulați importerul în prebuild, pe hosting sau în browser.
-
-Nu există în această migrare modificări de date CMS, prețuri, gate de indexare sau deploy.
+Nu declarați succesul build-ului, al e2e ori al revizuirii vizuale înainte de verificarea rezultatelor CI și a capturilor. Nu există deploy sau modificare a datelor prin această migrare. La rollback, revenirea la next/font/google reactivează dependența de descărcarea externă la build.

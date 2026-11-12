@@ -12,9 +12,7 @@ export const serif = localFont({
 })
 
 export const sans = localFont({
-  src: '../assets/fonts/Manrope.ttf',
-  weight: '200 800',
-  style: 'normal',
+  src: [{ path: '../assets/fonts/Manrope.ttf', weight: '200 800', style: 'normal' }],
   variable: '--font-sans',
   display: 'swap',
   fallback: ['Arial', 'sans-serif'],
