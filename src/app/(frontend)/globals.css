@@ -2889,3 +2889,42 @@ h2 {
   .video-start .video-play-icon,
   .resource-menu > summary::after { transition: none; }
 }
+
+
+/* Approved video context on a commercial service page */
+.service-video-proof {
+  max-width: 1200px;
+  padding-top: 50px;
+  padding-bottom: 70px;
+  border-bottom: 1px solid var(--line);
+}
+.service-video-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, .85fr);
+  align-items: end;
+  gap: clamp(20px, 5vw, 70px);
+  margin-bottom: 30px;
+}
+.service-video-heading h2 { font-size: clamp(36px, 5vw, 65px); }
+.service-video-heading > p { color: var(--muted); font-size: 14px; }
+.service-video-proof .video-player { max-width: 940px; }
+.service-video-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 25px;
+  max-width: 940px;
+  margin-top: 25px;
+}
+.service-video-details h3 {
+  font: 400 clamp(27px, 3vw, 40px)/1.2 var(--font-serif), Georgia, serif;
+  margin-bottom: 10px;
+}
+.service-video-details p { color: var(--muted); max-width: 60ch; }
+@media (max-width: 760px) {
+  .service-video-heading { grid-template-columns: 1fr; gap: 16px; }
+  .service-video-proof { padding-top: 35px; padding-bottom: 50px; }
+  .service-video-details { display: block; }
+  .service-video-details .text-link { margin-top: 18px; }
+}

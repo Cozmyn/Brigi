@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Videos, Media } from '@/cms/types'
 import {
   approvedPublicVideo, verifiedYouTubeID, videoStructuredData, videoIsIndexable,
+  videoForService,
 } from '@/lib/public-videos'
 
 const poster: Media = {
@@ -64,5 +65,10 @@ describe('real recordings and video schema safety', () => {
     expect(item.embedUrl).toBe('https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ')
     expect(JSON.stringify(graph)).not.toMatch(/AggregateRating|OfferCatalog|synthetic-live|@type":"Review/)
     expect(approvedPublicVideo({ ...draft, seo: { noindex: true } }, 'en')?.path).toBe('/en/video/recital-qa')
+    expect(videoForService([result], 'nunti-si-ceremonii')).toBeUndefined()
+    const wedding = approvedPublicVideo({ ...draft, eventType: 'wedding' }, 'ro')!
+    expect(videoForService([wedding], 'nunti-si-ceremonii')?.id).toBe(draft.id)
+    expect(videoForService([wedding], 'evenimente-corporate')).toBeUndefined()
+    expect(videoForService([wedding], 'evenimente-private')).toBeUndefined()
   })
 })
