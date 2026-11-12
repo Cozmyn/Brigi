@@ -110,17 +110,15 @@ test('CMS publication, prices, consent analytics and lead privacy work end to en
   expect(essential).toBeTruthy()
   await request.patch(`/api/services/${essential.id}?locale=ro`, {
     headers,
-    data: { ...essential, priceFromEUR: 499, _status: 'published' },
+    data: { ...essential, priceFromEUR: 499, visible: true, priceApproved: true, _status: 'published' },
   })
   await page.goto('/')
   await expect(page.locator('.package-price').first()).toContainText('499')
   expect(await page.locator('script[type="application/ld+json"]').textContent()).toContain(
     '"minPrice":499',
   )
-  await request.patch(`/api/services/${essential.id}?locale=ro`, {
-    headers,
-    data: { ...essential, priceFromEUR: 450, _status: 'published' },
-  })
+  // Restore the unapproved state in the isolated CI fixture (not a real business price).
+  await contentStore.unpublish('services', essential.id, { locale: 'ro', overrideAccess: true })
 
   const anonymous = await apiRequest.newContext({
     baseURL: process.env.TEST_BASE_URL || 'http://127.0.0.1:3000',
