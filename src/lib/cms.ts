@@ -5,7 +5,6 @@ import { authenticate } from '@/cms/auth'
 import { contentStore } from '@/cms/store'
 import { databaseConfigured } from '@/cms/db'
 import { siteContent, type SiteContent, isPublicURL } from './site'
-import { repairPublicText } from './positioning'
 import { editorialPages, type EditorialPage } from './editorial'
 import type { Media, Page } from '@/cms/types'
 
@@ -187,10 +186,9 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
     author: x.author,
     context: [x.eventType, x.city, x.year].filter(Boolean).join(' · '),
   }))
-  return repairPublicText(c) as SiteContent
+  return c
 })
 export function cmsPage(doc: Page): EditorialPage {
-  doc = repairPublicText(doc) as Page
   return {
     slug: doc.slug,
     title: doc.title,
