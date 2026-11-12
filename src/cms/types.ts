@@ -55,6 +55,15 @@ export interface Videos {
   createdAt: string
   updatedAt: string
   title: string
+  slug?: string
+  description?: string
+  publishedAt?: string
+  durationSeconds?: number
+  transcript?: string
+  recordingContext?: 'live' | 'studio' | 'rehearsal' | 'other'
+  rightsConfirmed?: boolean
+  visible?: boolean
+  seo?: Page['seo']
   eventType?: 'wedding' | 'corporate' | 'private' | 'other'
   kind: 'showreel' | 'full' | 'short'
   poster?: number | Media
