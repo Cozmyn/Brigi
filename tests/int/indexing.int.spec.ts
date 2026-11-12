@@ -7,6 +7,12 @@ vi.mock('@/lib/cms', () => ({
 vi.mock('@/lib/public-articles', () => ({ getPublicArticles: vi.fn(async () => []) }))
 vi.mock('@/lib/public-entities', () => ({ entityKinds: ['musical-formats', 'partners', 'case-studies'],
   getPublicEntities: vi.fn(async () => []), entityCanonical: vi.fn(), entityHubPath: vi.fn(), entityIsIndexable: vi.fn() }))
+// Isolate indexing tests from a database that is deliberately not migrated yet.
+vi.mock('@/lib/public-videos', () => ({
+  getPublicVideos: vi.fn(async () => []),
+  videoIsIndexable: vi.fn(),
+  videoLanguagePair: vi.fn(),
+}))
 afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 async function loadIndexing(gate: string) {
   vi.resetModules()

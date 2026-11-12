@@ -12,6 +12,12 @@ vi.mock('@/lib/public-entities', () => ({
   getPublicEntities: vi.fn(async () => []),
   entityCanonical: vi.fn(), entityHubPath: vi.fn(), entityIsIndexable: vi.fn(),
 }))
+// Isolate indexing tests from a database that is deliberately not migrated yet.
+vi.mock('@/lib/public-videos', () => ({
+  getPublicVideos: vi.fn(async () => []),
+  videoIsIndexable: vi.fn(),
+  videoLanguagePair: vi.fn(),
+}))
 afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 
 const page = (id: number, slug: string): EditorialPage => ({
