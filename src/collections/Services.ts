@@ -38,8 +38,18 @@ export const Services: CollectionConfig = {
     { name: 'visible', type: 'checkbox', defaultValue: true },
     {
       name: 'priceApproved',
+      label: 'Preț aprobat editorial (nu confirmă singur oferta reală)',
       type: 'checkbox',
       defaultValue: false,
     },
+    {
+      name: 'commerciallyVerified',
+      label: 'Oferă efectiv acest pachet și confirmă prețul manual',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { description: 'Necesită verificare nouă: prețurile din seedul istoric nu sunt confirmări comerciale.' },
+    },
+    { name: 'commercialVerificationNote', label: 'Notă internă despre ofertă',
+      type: 'textarea', maxLength: 1000 },
   ],
 }
