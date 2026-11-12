@@ -69,9 +69,9 @@ if (!(await cms.count({ collection: 'services' })).totalDocs) {
         suitedFor: p.detail,
         featured: p.featured,
         order,
-        visible: true,
-        priceApproved: true,
-        _status: 'published',
+        visible: false,
+        priceApproved: false,
+        _status: 'draft',
       },
     })
 }
@@ -87,7 +87,7 @@ if (!home.heroTitle)
     data: {
       showreelVisible: true,
       testimonialsVisible: true,
-      trustStripVisible: true,
+      trustStripVisible: false,
       heroTitle: c.hero.title[0],
       heroAccent: c.hero.title[1],
       heroEyebrow: c.hero.kicker,

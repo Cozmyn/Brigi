@@ -22,7 +22,14 @@ export function publicPhoto(value: number | Media | null | undefined) {
 const nonempty = (value: string | null | undefined, fallback: string) => value?.trim() || fallback
 export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<SiteContent> => {
   const cms = await getCMS()
-  if (!cms) return locale === 'en' ? englishContent : siteContent
+  if (!cms) {
+    const fallback = structuredClone(locale === 'en' ? englishContent : siteContent)
+    // Content bundled for editorial reference is not a verified commercial offer.
+    fallback.packages = []
+    fallback.visibility.credentials = false
+    fallback.verifiedCredentials = []
+    return fallback
+  }
   const [settings, home, services, faqs, videos, songs, testimonials] = await Promise.all([
     cms.findGlobal({ slug: 'site-settings', locale, overrideAccess: false }),
     cms.findGlobal({ slug: 'home-settings', locale, depth: 1, overrideAccess: false }),
@@ -97,10 +104,17 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
     c.artist.social = Object.fromEntries(
       settings.socialLinks.filter((x) => isPublicURL(x.url)).map((x) => [x.label, x.url]),
     )
+  c.verifiedCredentials = (home.verifiedCredentials || []).filter((item) => {
+    if (!item?.label?.trim() || !item?.sourceURL?.trim()) return false
+    try {
+      const url = new URL(item.sourceURL)
+      return url.protocol === 'https:' && !url.username && !url.password && !!url.hostname
+    } catch { return false }
+  }).map((item) => ({ label: item.label.trim(), sourceURL: item.sourceURL }))
   c.visibility = {
     media: home.showreelVisible !== false,
     testimonials: home.testimonialsVisible !== false,
-    credentials: home.trustStripVisible !== false,
+    credentials: home.trustStripVisible === true && c.verifiedCredentials.length > 0,
   }
   c.analyticsEnabled = Boolean(settings.analyticsEnabled)
   c.verification = {
@@ -146,9 +160,8 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
     if (photo) c.photos[slot] = photo
   }
   // Once the CMS is configured, hiding all packages/FAQs must really hide them.
-  const serviceCount = await cms.count({ collection: 'services', locale, overrideAccess: true })
-  if (serviceCount.totalDocs)
-    c.packages = services.docs.map((p) => ({
+  // Never expose built-in price examples when no approved service exists.
+  c.packages = services.docs.map((p) => ({
       id: String(p.id),
       formValue: p.sets,
       name: p.name,

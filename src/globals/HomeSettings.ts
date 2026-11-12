@@ -112,8 +112,25 @@ export const HomeSettings: GlobalConfig = {
     {
       name: 'trustStripVisible',
       type: 'checkbox',
-      defaultValue: true,
-      label: 'Afișează parcursul artistic',
+      defaultValue: false,
+      label: 'Afișează doar acreditările cu dovezi și surse verificate',
+    },
+    {
+      name: 'verifiedCredentials',
+      label: 'Acreditări și apariții verificate (niciun exemplu fictiv)',
+      type: 'array',
+      fields: [
+        { name: 'label', label: 'Afirmație verificată', type: 'text', required: true, maxLength: 160 },
+        { name: 'sourceURL', label: 'Sursă publică de verificare HTTPS', type: 'text', required: true,
+          maxLength: 1200, validate: (value) => {
+            if (typeof value !== 'string') return 'Sursă HTTPS necesară.'
+            try {
+              const parsed = new URL(value)
+              return (parsed.protocol === 'https:' && !parsed.username && !parsed.password && !!parsed.hostname) ||
+                'Sursă HTTPS fără credențiale necesară.'
+            } catch { return 'Sursă HTTPS validă necesară.' }
+          } },
+      ],
     },
     {
       name: 'sectionOrder',

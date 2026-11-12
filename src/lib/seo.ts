@@ -107,7 +107,7 @@ export function structuredData(
       serviceType: 'Prestație vocală live cu repertoriu românesc și internațional',
       provider: { '@id': personID },
       ...(c.artist.serviceArea ? { areaServed: c.artist.serviceArea } : {}),
-      ...(includeOffers
+      ...(includeOffers && c.packages.length > 0
         ? {
             hasOfferCatalog: {
               '@type': 'OfferCatalog',

@@ -1,7 +1,7 @@
 import { siteContent, type SiteContent } from './site'
 export const englishContent: SiteContent = {
   ...siteContent,
-  artist: { ...siteContent.artist, profession: 'Professional live vocalist', biography: 'Brigitta is a professional live vocalist, former Vocea României contestant and former SISTEM vocalist, with original music releases. She performs Romanian and international music at weddings, christenings, private celebrations and corporate events.', credentials: ['Former Vocea României contestant', 'Former SISTEM vocalist', 'Original music releases'] },
+  artist: { ...siteContent.artist, profession: 'Professional live vocalist', biography: 'Brigitta performs live vocals for weddings, ceremonies, private celebrations and corporate events. The repertoire and programme are planned with the organiser for the actual occasion.', credentials: [] },
   hero: { kicker: 'Live vocalist / Weddings & events', title: ['Brigitta.', 'A voice for your evening.'], description: 'Romanian and international repertoire for weddings, private celebrations and corporate events. A live programme planned around your guests and schedule.' },
   cta: { availability: 'Check availability', phone: 'Call now', quote: 'Request a quote' },
   headerCTA: { label: 'Check availability', href: '/en/booking' },
