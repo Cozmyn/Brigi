@@ -36,17 +36,17 @@ export const Articles: CollectionConfig = {
   versions: { drafts: { autosave: true }, maxPerDoc: 30 },
   admin: {
     useAsTitle: 'title',
-    description: 'Ghiduri în pregătire. Rutele publice și preview-ul Article nu sunt activate în acest lot.',
+    description: 'Ghiduri editoriale. Folosește acțiunea dedicată de preview pentru draftul salvat în limba selectată.',
     defaultColumns: ['title', 'slug', 'editorialStatus', '_status', 'updatedAt'],
   },
-  fields: [{
+  fields: [{ type: 'articlePreview' }, {
     type: 'group',
     validate: validateArticlePublication,
     fields: [
       { name: 'title', type: 'text', required: true, localized: true, maxLength: 180 },
       {
         name: 'slug', type: 'text', required: true, unique: true, index: true, maxLength: 180,
-        admin: { description: 'Identificator local fără /. Nu folosi încă linkul generic de previzualizare: ruta Article urmează separat.' },
+        admin: { description: 'Identificator local fără /. Folosește „Previzualizează draftul salvat” de la începutul formularului; linkul generic din bara de salvare nu este încă adaptat articolelor.' },
         validate: (value) => (typeof value === 'string' &&
           contentPath({ collection: 'articles', locale: 'ro', slug: value }) !== null) || 'Slug simplu, valid și nerezervat.',
       },
