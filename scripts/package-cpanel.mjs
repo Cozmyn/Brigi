@@ -20,8 +20,8 @@ await mkdir(stage, { recursive: true })
 // Source TypeScript and dev tools must never be installed on the cPanel host.
 await compile({
   entryPoints: [path.join(root, 'scripts/seed-content.ts')],
-  outfile: path.join(stage, 'seed-content.cjs'),
-  platform: 'node', format: 'cjs', target: 'node24', bundle: true,
+  outfile: path.join(stage, 'seed-content.mjs'),
+  platform: 'node', format: 'esm', target: 'node24', bundle: true,
   packages: 'external', tsconfig: path.join(root, 'tsconfig.json'), logLevel: 'silent',
 })
 // Explicit allowlist. Never copy a workspace, .env, media, SQL exports or node_modules.
