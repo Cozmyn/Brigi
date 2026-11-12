@@ -9,13 +9,16 @@ test('Romanian homepage, configured prices and conditional sections', async ({ p
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   const fontState = await page.evaluate(async () => {
-    const firstFamily = (value: string) => value.split(',')[0].trim().replace(/^['"]|['"]$/g, '')
-    const family = firstFamily(getComputedStyle(document.documentElement).getPropertyValue('--font-sans'))
+    // Keep this callback self-contained: tsx can add __name to named inner functions.
+    const family = getComputedStyle(document.documentElement)
+      .getPropertyValue('--font-sans').split(',')[0].trim().replace(/^['"]|['"]$/g, '')
     if (!family) throw new Error('Missing --font-sans CSS variable.')
     const faces = await document.fonts.load(`400 16px "${family}"`, 'ĂăÂâÎîȘșȚț')
     await document.fonts.ready
+    const appliedFamily = getComputedStyle(document.body)
+      .fontFamily.split(',')[0].trim().replace(/^['"]|['"]$/g, '')
     return {
-      applied: firstFamily(getComputedStyle(document.body).fontFamily) === family,
+      applied: appliedFamily === family,
       count: faces.length,
       loaded: faces.every((face) => face.status === 'loaded'),
     }
