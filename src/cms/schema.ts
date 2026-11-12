@@ -1,4 +1,5 @@
 import { Pages } from '@/collections/Pages'
+import { Articles } from '@/collections/Articles'
 import { Services } from '@/collections/Services'
 import { Videos } from '@/collections/Videos'
 import { Repertoire } from '@/collections/Repertoire'
@@ -32,7 +33,7 @@ for (const config of [Pages, Services])
     ],
   })
 export const collections: Record<string, CollectionConfig> = Object.fromEntries(
-  [Pages, Services, Videos, Repertoire, Testimonials, FAQ, Media, Redirects, Inquiries, Users].map(
+  [Pages, Articles, Services, Videos, Repertoire, Testimonials, FAQ, Media, Redirects, Inquiries, Users].map(
     (c) => [c.slug, c],
   ),
 )
@@ -41,6 +42,7 @@ export const globals: Record<string, CollectionConfig> = Object.fromEntries(
 )
 export const labels: Record<string, string> = {
   pages: 'Pagini & SEO',
+  articles: 'Ghiduri & articole',
   services: 'Pachete & prețuri',
   videos: 'Video & muzică',
   repertoire: 'Repertoriu',
