@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getArticlePreview } from '@/lib/article-preview'
-import { serif, sans } from '@/lib/fonts'
 import styles from './preview.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -24,7 +23,7 @@ export default async function ArticlePreviewPage({ params, searchParams }: Props
   if (!preview) notFound()
   const { article } = preview
   const english = preview.locale === 'en'
-  return <main className={`${styles.preview} ${serif.variable} ${sans.variable}`} lang={preview.locale}>
+  return <main className={styles.preview} lang={preview.locale}>
     <aside className={styles.notice}>
       <p>{english ? 'Private preview of the saved draft. This is not publication.' : 'Previzualizare privată a draftului salvat. Nu reprezintă publicare.'}</p>
       <p>{english ? 'Unsaved changes are not shown.' : 'Modificările nesalvate nu sunt afișate.'}</p>
