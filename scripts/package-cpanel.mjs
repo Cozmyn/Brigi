@@ -2,7 +2,11 @@ import { cp, mkdir, readFile, rm, writeFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { build as compile } from 'esbuild'
+import { createRequire } from 'node:module'
+
+// tsx pins esbuild as its own (nested) dependency in the committed npm lockfile.
+// Resolve from tsx's installed package rather than assuming npm hoists esbuild.
+const { build: compile } = createRequire(import.meta.resolve('tsx'))('esbuild')
 
 const root = process.cwd()
 const sha =
