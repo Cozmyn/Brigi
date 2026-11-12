@@ -5,9 +5,18 @@ for (const locale of ['ro', 'en'] as const) {
     test(`local fonts and Romanian samples: ${locale}, ${width}px`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width, height: 1000 })
       const remoteFontRequests: string[] = []
+      const fontNetworkErrors: string[] = []
       page.on('request', (request) => {
         if (['fonts.googleapis.com', 'fonts.gstatic.com'].includes(new URL(request.url()).hostname))
           remoteFontRequests.push(request.url())
+      })
+      page.on('requestfailed', (request) => {
+        if (request.resourceType() === 'font')
+          fontNetworkErrors.push(`${request.url()}: ${request.failure()?.errorText}`)
+      })
+      page.on('response', (response) => {
+        if (response.request().resourceType() === 'font' && !response.ok())
+          fontNetworkErrors.push(`${response.status()} ${response.url()}`)
       })
       const response = await page.goto(locale === 'ro' ? '/' : '/en')
       expect(response?.status()).toBe(200)
@@ -39,12 +48,22 @@ for (const locale of ['ro', 'en'] as const) {
           line.style.cssText = `font-family:var(${config.variable});font-style:${config.style};font-weight:${config.weight};font-size:24px;line-height:1.5;margin:12px 0;`
           panel.append(line)
           const computed = getComputedStyle(line)
-          const faces = await document.fonts.load(
-            `${config.style} ${config.weight} 24px ${computed.fontFamily}`, sample,
-          )
+          // Load only the primary webfont; system fallback faces are not the subject of this test.
+          const primaryFamily = computed.fontFamily.split(',')[0].trim()
+          let count = 0
+          let loaded = false
+          let error = ''
+          try {
+            const faces = await document.fonts.load(
+              `${config.style} ${config.weight} 24px ${primaryFamily}`, sample,
+            )
+            count = faces.length
+            loaded = faces.every((face) => face.status === 'loaded')
+          } catch (failure) {
+            error = failure instanceof Error ? failure.message : String(failure)
+          }
           outcomes.push({
-            count: faces.length,
-            loaded: faces.every((face) => face.status === 'loaded'),
+            family: primaryFamily, error, count, loaded,
             weight: computed.fontWeight,
             style: computed.fontStyle,
             expectedWeight: config.weight,
@@ -55,13 +74,19 @@ for (const locale of ['ro', 'en'] as const) {
         return outcomes
       })
 
+      await testInfo.attach('local-font-diagnostics', {
+        body: JSON.stringify({ results, fontNetworkErrors }, null, 2),
+        contentType: 'application/json',
+      })
       expect(results).toHaveLength(8)
       for (const result of results) {
-        expect(result.count).toBeGreaterThan(0)
-        expect(result.loaded).toBe(true)
+        expect(result.error, result.family).toBe('')
+        expect(result.count, result.family).toBeGreaterThan(0)
+        expect(result.loaded, result.family).toBe(true)
         expect(result.weight).toBe(result.expectedWeight)
         expect(result.style).toBe(result.expectedStyle)
       }
+      expect(fontNetworkErrors).toEqual([])
       expect(remoteFontRequests).toEqual([])
       await testInfo.attach('local-font-samples', {
         body: await page.locator('#local-font-test-panel').screenshot(),

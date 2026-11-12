@@ -38,14 +38,14 @@ describe('vendored font integrity and integration', () => {
   })
 
   it('shares a local-only font module across both public layouts', () => {
-    const module = readFileSync('src/lib/fonts.ts', 'utf8')
-    expect(module).toContain("from 'next/font/local'")
-    expect(module).not.toContain('next/font/google')
-    expect(module).toContain("variable: '--font-serif'")
-    expect(module).toContain("variable: '--font-sans'")
-    expect(module).toContain("weight: '400 500', style: 'normal'")
-    expect(module).toContain("weight: '400 500', style: 'italic'")
-    expect(module).toContain("weight: '200 800', style: 'normal'")
+    const fontModuleSource = readFileSync('src/lib/fonts.ts', 'utf8')
+    expect(fontModuleSource).toContain("from 'next/font/local'")
+    expect(fontModuleSource).not.toContain('next/font/google')
+    expect(fontModuleSource).toContain("variable: '--font-serif'")
+    expect(fontModuleSource).toContain("variable: '--font-sans'")
+    expect(fontModuleSource).toContain("weight: '400 500', style: 'normal'")
+    expect(fontModuleSource).toContain("weight: '400 500', style: 'italic'")
+    expect(fontModuleSource).toContain("weight: '200 800', style: 'normal'")
     for (const path of ['src/app/(frontend)/layout.tsx', 'src/app/(english)/layout.tsx']) {
       const layout = readFileSync(path, 'utf8')
       expect(layout).toContain("import { serif, sans } from '@/lib/fonts'")

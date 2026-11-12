@@ -8,10 +8,21 @@ test('Romanian homepage, configured prices and conditional sections', async ({ p
   await expect(page.locator('iframe')).toHaveCount(0)
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.evaluate(() => document.fonts.ready)
-  expect(await page.locator('body').evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(
-    /Manrope/i,
-  )
+  const fontState = await page.evaluate(async () => {
+    const firstFamily = (value: string) => value.split(',')[0].trim().replace(/^['"]|['"]$/g, '')
+    const family = firstFamily(getComputedStyle(document.documentElement).getPropertyValue('--font-sans'))
+    if (!family) throw new Error('Missing --font-sans CSS variable.')
+    const faces = await document.fonts.load(`400 16px "${family}"`, 'ĂăÂâÎîȘșȚț')
+    await document.fonts.ready
+    return {
+      applied: firstFamily(getComputedStyle(document.body).fontFamily) === family,
+      count: faces.length,
+      loaded: faces.every((face) => face.status === 'loaded'),
+    }
+  })
+  expect(fontState.applied).toBe(true)
+  expect(fontState.count).toBeGreaterThan(0)
+  expect(fontState.loaded).toBe(true)
   await page.screenshot({ path: test.info().outputPath('homepage-desktop.png'), fullPage: true })
   await page.screenshot({ path: test.info().outputPath('hero-desktop.png') })
   await page.goto('/en')
