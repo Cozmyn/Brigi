@@ -9,7 +9,7 @@ type Overview = {
     heroPhotoApproved: boolean; approvedOfferCount: number; credentialSourceCount: number }
   visits: { today: number; week: number; month: number }
   views: number
-  conversions: { calls: number; cta: number; starts: number; completed: number; packages: number;
+  conversions: { calls: number; whatsapp: number; cta: number; starts: number; completed: number; packages: number;
     plannerExports: number; comparisons: number; budgetChecks: number }
   pages: Rank
   referrers: Rank
@@ -175,6 +175,7 @@ export default function BeforeDashboard() {
           <h2>Interacțiuni / ultimele 30 zile</h2>
           <div className="stat-grid">
             <Stat label="Click Sună" value={overview.conversions.calls} />
+            <Stat label="Click WhatsApp" value={overview.conversions.whatsapp} />
             <Stat label="Click contact" value={overview.conversions.cta} />
             <Stat label="Formulare începute" value={overview.conversions.starts} />
             <Stat label="Formulare finalizate" value={overview.conversions.completed} />

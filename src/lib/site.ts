@@ -38,6 +38,7 @@ export const siteContent = {
     name: 'Brigitta',
     profession: 'Solistă vocală · Live vocalist',
     phone: process.env.PUBLIC_PHONE || '',
+    whatsapp: '',
     email: process.env.PUBLIC_BOOKING_EMAIL || '',
     social: { instagram: '', facebook: '', tiktok: '', youtube: '', spotify: '' } as Record<
       string,

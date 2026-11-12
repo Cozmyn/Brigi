@@ -51,6 +51,10 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
               href={`tel:${c.artist.phone.replace(/[^+\d]/g, '')}`}>
               {c.cta.phone} ↗
             </TrackedLink>}
+            {c.artist.whatsapp && <TrackedLink event="click_whatsapp" className="hero-phone"
+              href={`https://wa.me/${c.artist.whatsapp}`} target="_blank" rel="noopener noreferrer">
+              Scrie pe WhatsApp ↗
+            </TrackedLink>}
           </div>
           <p className="hero-availability-note">
             Data nu este rezervată prin formular. Trimite localitatea și data,

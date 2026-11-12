@@ -99,6 +99,8 @@ export const getSiteContent = cache(async (locale: 'ro' | 'en' = 'ro'): Promise<
       : settings
   c.artist.phone = settings.phone || shared.phone || c.artist.phone
   c.artist.email = settings.email || shared.email || c.artist.email
+  const whatsapp = String(settings.whatsapp || shared.whatsapp || '').replace(/\D/g, '')
+  c.artist.whatsapp = /^\d{9,15}$/.test(whatsapp) ? whatsapp : ''
   c.artist.biography = nonempty(settings.biography, c.artist.biography)
   c.artist.serviceArea = settings.geographicArea || ''
   if (settings.socialLinks)

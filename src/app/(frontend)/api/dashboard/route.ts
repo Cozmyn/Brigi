@@ -76,6 +76,7 @@ export async function GET(request: Request) {
       views: sum('page_view'),
       conversions: {
         calls: sum('click_phone'),
+        whatsapp: sum('click_whatsapp'),
         cta: sum('click_contact_cta'),
         starts: sum('contact_form_started'),
         completed: sum('contact_form_submitted'),

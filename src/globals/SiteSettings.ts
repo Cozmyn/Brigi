@@ -22,7 +22,13 @@ export const SiteSettings: GlobalConfig = {
     },
     { name: 'googleVerification', type: 'text' },
     { name: 'bingVerification', type: 'text' },
-    { name: 'whatsapp', type: 'text' },
+    {
+      name: 'whatsapp', label: 'WhatsApp pentru oferte (număr internațional)', type: 'text',
+      admin: { description: 'Exemplu: +40712345678. Linkul apare numai după completarea numărului real.' },
+      validate: (value: unknown) =>
+        !value || (typeof value === 'string' && /^\+?[0-9 ()-]{9,24}$/.test(value)) ||
+        'Introdu un număr WhatsApp real în format internațional.',
+    },
     { name: 'defaultLocale', type: 'select', defaultValue: 'ro', options: ['ro', 'en'] },
     { name: 'publicSlaDays', type: 'number', defaultValue: 10 },
     { name: 'geographicArea', type: 'text', localized: true },

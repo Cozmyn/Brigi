@@ -23,6 +23,10 @@ export async function SiteFooter({ locale: _locale }: { locale?: Locale }) {
               </TrackedLink>
             )}
             {artist.email && <Link href={`mailto:${artist.email}`}>{artist.email}</Link>}
+            {artist.whatsapp && <TrackedLink event="click_whatsapp"
+              href={`https://wa.me/${artist.whatsapp}`} target="_blank" rel="noopener noreferrer">
+              WhatsApp pentru oferte ↗
+            </TrackedLink>}
             {Object.entries(artist.social)
               .filter(([, url]) => isPublicURL(url))
               .map(([name, url]) => (

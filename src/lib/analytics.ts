@@ -15,6 +15,7 @@ export const analyticsSchema = z.object({
     'visit',
     'page_view',
     'click_phone',
+    'click_whatsapp',
     'click_contact_cta',
     'contact_form_started',
     'contact_form_submitted',
