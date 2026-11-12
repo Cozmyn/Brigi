@@ -9,6 +9,8 @@ import { legalCopy } from '@/lib/site'
 import { getCMS, getPublicPages, getSiteContent } from '@/lib/cms'
 import { routeAliases } from '@/lib/editorial'
 import { jsonLD, pageMetadata, structuredData } from '@/lib/seo'
+import { verifiedStaticPair } from '@/lib/hreflang'
+import { publishedPageLanguagePair } from '@/lib/public-page-alternates'
 export const revalidate = 60
 const legalKey = { confidentialitate: 'privacy', cookies: 'cookies', termeni: 'terms' } as const
 export async function generateMetadata({
@@ -24,12 +26,14 @@ export async function generateMetadata({
       'Verifică disponibilitatea Brigittei pentru eveniment. Trimite data, localitatea și preferințele pentru un program vocal live și o ofertă personalizată.',
       '/rezervare',
       c,
+      { languages: verifiedStaticPair('/rezervare', '/en/booking') },
     )
   const page = (await getPublicPages('ro', true)).find((p) => p.slug === slug)
   if (page)
     return pageMetadata(page.title, page.description, `/${slug}`, c, {
       ...page.seo,
       noindex: page.seo?.noindex || (page.type === 'media' && !c.media.length),
+      languages: await publishedPageLanguagePair('ro', slug),
     })
   const legal = legalKey[slug as keyof typeof legalKey]
   if (legal)
@@ -81,7 +85,7 @@ export default async function RomanianPage({
         </div>
         <BookingForm
           key={initialPackage}
-          content={{ booking: c.booking, packages: c.packages, events: c.events }}
+          content={{ booking: c.booking, packages: c.packages, events: c.events, analyticsEnabled: c.analyticsEnabled }}
           initialPackage={initialPackage}
           selectedPackageName={selected?.name}
         />

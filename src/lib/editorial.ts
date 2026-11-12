@@ -1,4 +1,6 @@
 export type EditorialPage = {
+  /** CMS document ID (absent for built-in fallback pages). */
+  id?: number
   slug: string
   title: string
   h1: string
