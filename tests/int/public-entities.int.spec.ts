@@ -3,7 +3,7 @@ import type { Knex } from 'knex'
 import { getDB } from '@/cms/db'
 import { contentPath } from '@/lib/content-paths'
 import { entityFromSnapshot, entitiesFromRows, entityKinds, entityIsIndexable, entityCanonical, entityStructuredData, getPublicEntity, type EntityRow } from '@/lib/public-entities'
-vi.mock('@/cms/db', () => ({ databaseConfigured: vi.fn(() => true), getDB: vi.fn() }))
+vi.mock('@/cms/db', () => ({ databaseConfigured: vi.fn(() => true), getDB: vi.fn(), closeDB: vi.fn(async () => {}) }))
 beforeEach(() => { vi.clearAllMocks() })
 const snapshot = { title: 'DJ + saxophone', slug: 'qa-public', summary: 'Test only.', sections: [{ heading: 'Știință', body: 'Text exact.' }],
   reviewer: 'QA', reviewedAt: '2020-01-01T12:00:00Z', _status: 'published', visible: true, approvedForPublication: true,
