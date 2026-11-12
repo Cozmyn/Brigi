@@ -9,7 +9,8 @@ type Overview = {
     heroPhotoApproved: boolean; approvedOfferCount: number; credentialSourceCount: number }
   visits: { today: number; week: number; month: number }
   views: number
-  conversions: { calls: number; cta: number; starts: number; completed: number; packages: number }
+  conversions: { calls: number; cta: number; starts: number; completed: number; packages: number;
+    plannerExports: number; comparisons: number; budgetChecks: number }
   pages: Rank
   referrers: Rank
   campaigns: Rank
@@ -142,6 +143,15 @@ export default function BeforeDashboard() {
               </div>
             </>
           )}
+          <h2>Utilizarea instrumentelor (cu acord)</h2>
+          <div className="stat-grid">
+            <Stat label="Planner PDF descărcate" value={overview.conversions.plannerExports} />
+            <Stat label="Comparații selectate" value={overview.conversions.comparisons} />
+            <Stat label="Estimări calculate" value={overview.conversions.budgetChecks} />
+          </div>
+          <p className="dash-note">
+            Sunt numărate doar evenimente anonime cu acord pentru statistici. Nu se trimit datele sau sumele introduse.
+          </p>
           <h2>Vizite și interes</h2>
           {!overview.enabled && (
             <p className="dash-note">

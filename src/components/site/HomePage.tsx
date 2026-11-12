@@ -178,6 +178,17 @@ export async function HomePage({ locale: _locale }: { locale?: Locale }) {
           ))}
         </section>
       )}
+      <section className="section tools-home-teaser">
+        <p className="eyebrow">BRIGITTA / PLANIFICARE PRACTICĂ</p>
+        <h2 style={{ fontSize: 'clamp(36px, 5vw, 66px)', maxWidth: '15ch' }}>
+          Pregătește muzica evenimentului tău.
+        </h2>
+        <p style={{ color: 'var(--muted)', margin: '22px 0 24px' }}>
+          Creează cronologia serii, compară formate publicate și calculează un buget personal,
+          fără cont și fără presupuneri despre prețuri.
+        </p>
+        <Link href="/instrumente" className="button">Explorează instrumentele ↗</Link>
+      </section>
       <HomepageResources guides={guides} cases={cases} />
       <section className="section faq-section" id="intrebari">
         <div>

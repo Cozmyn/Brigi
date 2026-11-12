@@ -29,7 +29,12 @@
     "maintenance": "node --import tsx scripts/maintenance.ts",
     "notify:inquiries": "node --import tsx scripts/dispatch-inquiry-notifications.ts",
     "test:db": "node --import tsx --test tests/mysql/store.test.ts tests/mysql/inquiry-workflow.test.ts",
-    "test:import": "node --import tsx --test tests/mysql/import.test.ts"
+    "test:import": "node --import tsx --test tests/mysql/import.test.ts",
+    "test:ops": "node --test tests/ops/*.test.mjs",
+    "ops:monitor": "node scripts/ops/site-monitor.mjs",
+    "ops:backup": "node scripts/ops/backup.mjs",
+    "ops:backup:verify": "node scripts/ops/verify-backup.mjs",
+    "ops:restore:staging": "node scripts/ops/restore-drill.mjs --apply-to-empty-staging-db"
   },
   "dependencies": {
     "@lexical/link": "^0.52.0",

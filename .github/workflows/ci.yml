@@ -3,6 +3,9 @@ on:
   pull_request:
   push:
     branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-24.04
@@ -39,6 +42,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:int
+      - run: npm run test:ops
       - run: npm run db:migrate
       - run: npm run test:import
       - run: npm run test:db
