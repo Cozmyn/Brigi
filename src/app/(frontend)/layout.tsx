@@ -1,18 +1,10 @@
 import type { Metadata } from 'next'
-import { Bodoni_Moda, Manrope } from 'next/font/google'
+import { serif, sans } from '@/lib/fonts'
 import { isProductionReady, siteURL } from '@/lib/site'
 import './globals.css'
 import { Analytics } from '@/components/site/Analytics'
 import { getSiteContent } from '@/lib/cms'
 export const dynamic = 'force-dynamic'
-const serif = Bodoni_Moda({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['400', '500'],
-  style: ['normal', 'italic'],
-  variable: '--font-serif',
-  display: 'swap',
-})
-const sans = Manrope({ subsets: ['latin', 'latin-ext'], variable: '--font-sans', display: 'swap' })
 const baseMetadata: Metadata = {
   metadataBase: new URL(siteURL),
   title: { default: 'Brigitta | Muzică live pentru evenimente', template: '%s | Brigitta' },
