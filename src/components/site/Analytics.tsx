@@ -74,7 +74,7 @@ export function Analytics({ enabled }: { enabled: boolean }) {
     try {
       localStorage.setItem(consentKey, value)
       if (value === 'no')
-        for (const key of ['brigitta:visit', 'brigitta:campaign', 'brigitta:attribution'])
+        for (const key of ['brigitta:visit', 'brigitta:campaign', 'brigitta:attribution', 'brigitta:attribution:first', 'brigitta:attribution:last'])
           sessionStorage.removeItem(key)
     } catch {
       /* Consent is still honored for this page. */
@@ -88,7 +88,7 @@ export function Analytics({ enabled }: { enabled: boolean }) {
       <p>
         <strong>Ne ajuți să înțelegem ce este util?</strong>
         <br />
-        Cu acordul tău, numărăm vizite și interacțiuni. Fără profiluri personale.{' '}
+        Cu acordul tău, numărăm vizite și interacțiuni și putem păstra sursa campaniei în cererea de ofertă pe care o trimiți. Poți refuza; formularul rămâne disponibil.{' '}
         <Link href="/cookies">Detalii</Link>
       </p>
       <div>

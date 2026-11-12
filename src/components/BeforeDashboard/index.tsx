@@ -11,7 +11,8 @@ type Overview = {
   pages: Rank
   referrers: Rank
   campaigns: Rank
-  recent: { id: number; name: string; city: string; eventDate: string; status: string }[]
+  recent: { id: number; name: string; city: string; eventDate: string; eventMonth?: string; status: string }[]
+  notifications?: { pending: number; processing: number; failed: number; delivered: number }
 }
 type Stats = { newCount: number; overdue: number; active: number; confirmed: number }
 export default function BeforeDashboard() {
@@ -32,7 +33,7 @@ export default function BeforeDashboard() {
         `where[dueAt][less_than]=${encodeURIComponent(new Date().toISOString())}&where[status][not_in][0]=confirmed&where[status][not_in][1]=lost&where[status][not_in][2]=archived&where[status][not_in][3]=spam`,
       ),
       query(
-        'where[status][in][0]=read&where[status][in][1]=contacted&where[status][in][2]=offer_prepared',
+        'where[status][in][0]=read&where[status][in][1]=contacted&where[status][in][2]=qualified&where[status][in][3]=offer_prepared&where[status][in][4]=negotiation',
       ),
       query('where[status][equals]=confirmed'),
     ])
@@ -92,11 +93,22 @@ export default function BeforeDashboard() {
       </div>
       <p className="dash-note">
         Datele de contact sunt vizibile doar conturilor autorizate. Cererile sunt salvate în inbox;
-        notificările prin email nu sunt activate.
+        notificările externe funcționează doar după configurarea webhookului și a workerului cron.
       </p>
       {error && <p role="alert">{error}</p>}
       {overview && (
         <>
+          {overview.notifications && (
+            <>
+              <h2>Notificări solicitări</h2>
+              <div className="stat-grid">
+                <Stat label="În așteptare" value={overview.notifications.pending} />
+                <Stat label="În curs" value={overview.notifications.processing} />
+                <Stat label="Eșuate (necesită intervenție)" value={overview.notifications.failed} />
+                <Stat label="Livrate" value={overview.notifications.delivered} />
+              </div>
+            </>
+          )}
           <h2>Vizite și interes</h2>
           {!overview.enabled && (
             <p className="dash-note">
@@ -139,7 +151,7 @@ export default function BeforeDashboard() {
                 <Link href={`/admin/collections/inquiries/${x.id}`} key={x.id}>
                   <strong>{x.name}</strong>
                   <span>
-                    {x.city} · {x.eventDate}
+                    {x.city} · {x.eventDate || x.eventMonth || 'Dată de stabilit'}
                   </span>
                   <span>{x.status}</span>
                 </Link>

@@ -3,6 +3,7 @@ import { Bodoni_Moda, Manrope } from 'next/font/google'
 import { isProductionReady, siteURL } from '@/lib/site'
 import './globals.css'
 import { Analytics } from '@/components/site/Analytics'
+import { AttributionCapture } from '@/components/site/AttributionCapture'
 import { getSiteContent } from '@/lib/cms'
 export const dynamic = 'force-dynamic'
 const serif = Bodoni_Moda({
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <Analytics enabled={c.analyticsEnabled} />
+        <AttributionCapture enabled={c.analyticsEnabled} />
       </body>
     </html>
   )

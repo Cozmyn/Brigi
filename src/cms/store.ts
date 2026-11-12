@@ -298,6 +298,9 @@ export class ContentStore {
       }
       if (old) await trx('cms_locales').where({ document_id: id, locale }).update(row)
       else await trx('cms_locales').insert(row)
+      // Atomic outbox: a committed lead always has a durable notification job.
+      if (opts.collection === 'inquiries' && !old)
+        await trx('inquiry_outbox').insert({ inquiry_id: id, status: 'pending' })
       await trx('cms_documents').where({ id }).update({ updated_at: trx.fn.now() })
       if (old) {
         await trx('cms_revisions').insert({

@@ -2526,3 +2526,34 @@ h2 {
 }
 
 .visual-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 30px 18px 14px; background: linear-gradient(transparent,#06191be8); color: #f2f4ee; font-size: 12px; z-index: 2; }
+
+/* Step 2: accessible quick/detailed inquiry controls. */
+.booking-mode-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.booking-mode-switch button {
+  min-height: 44px;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--cream);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.booking-mode-switch button[aria-pressed='true'] {
+  background: var(--accent);
+  color: #0b2227;
+  border-color: var(--accent);
+}
+.booking-mode-switch button:focus-visible {
+  outline: 2px solid var(--cream);
+  outline-offset: 3px;
+}
+.booking-form fieldset[hidden] { display: none; }
+@media (max-width: 440px) {
+  .booking-mode-switch button { width: 100%; }
+}

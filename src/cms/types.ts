@@ -131,14 +131,17 @@ export interface Inquiries {
   updatedAt: string
   locale: 'ro' | 'en'
   status:
-    'new' | 'read' | 'contacted' | 'offer_prepared' | 'confirmed' | 'lost' | 'archived' | 'spam'
+    'new' | 'read' | 'contacted' | 'qualified' | 'offer_prepared' | 'negotiation' | 'confirmed' | 'lost' | 'archived' | 'spam'
+  inquiryMode?: 'quick' | 'detailed'
+  datePrecision?: 'exact' | 'month' | 'unknown'
   eventDate: string
+  eventMonth?: string
   city: string
   county?: string
   approximateTime?: string
   venue?: string
   eventType: 'wedding' | 'ceremony' | 'corporate' | 'anniversary' | 'cocktail' | 'public' | 'other'
-  guestCount: number
+  guestCount?: number
   packageInterest: '1x45' | '2x45' | '3x45' | 'unsure' | 'custom'
   name: string
   phone: string
@@ -149,6 +152,19 @@ export interface Inquiries {
   preferredContact: 'phone' | 'whatsapp' | 'email'
   message?: string
   privacyAcknowledged: boolean
+  assignedTo?: string
+  qualification?: 'pending' | 'qualified' | 'not_fit'
+  nextActionAt?: string
+  quoteAmount?: number
+  confirmedValue?: number
+  currency?: 'EUR' | 'RON'
+  attributionConsent?: boolean
+  submissionFingerprint?: string
+  firstTouchUtmSource?: string
+  firstTouchUtmMedium?: string
+  firstTouchUtmCampaign?: string
+  firstTouchReferrer?: string
+  firstTouchLandingPath?: string
   utmSource?: string
   utmMedium?: string
   utmCampaign?: string
